@@ -17,22 +17,16 @@ O **Court Canvas** permite criar rapidamente um campo de futebol interativo onde
 
 ---
 
-## 🚀 Instalação e Desenvolvimento
-Esta biblioteca foi construída isoladamente no modo *Library Mode* do Vite.
+## 🚀 Instalação
 
-1. Navegue até a pasta interna do pacote:
+O pacote está oficialmente distribuído no NPM Registry e fornece suporte *out-of-the-box* (nativamente tipado/compilado) para Vanilla JS, React e Vue.
 
-
-2. Instale as dependências (Engine + DevPlugins):
+Para instalar na usa aplicação, rode:
 ```bash
-npm install
+npm install @mlalbuquerque/court-canvas
 ```
 
-3. Inicie o Servidor Vanilla de testes visual:
-```bash
-npm run dev
-# localhost:5173
-```
+*(Observação: Se você for usar React ou Vue, tenha certeza de que eles também estão instalados no seu projeto. O Court Canvas os tem como `peerDependencies` opcionais).*
 
 ---
 
@@ -46,7 +40,7 @@ Você não precisa reescrever o motor para migrar de Tech-Stack. O Court Canvas 
 ```html
 <div id="meu-campo"></div>
 <script type="module">
-  import { CourtCanvas } from 'court-canvas';
+  import { CourtCanvas } from '@mlalbuquerque/court-canvas';
 
   // Pronto! A Toolbar com os botões surge automaticamente ligada ao motor!
   const court = new CourtCanvas('meu-campo', { 
@@ -66,7 +60,7 @@ O pacote expõe um componente inteligente (wrapper) de carregamento em React.
 
 ```jsx
 import React from 'react';
-import { CourtCanvasReact } from 'court-canvas';
+import { CourtCanvasReact } from '@mlalbuquerque/court-canvas';
 
 const AppTatica = () => {
    return (
@@ -93,7 +87,7 @@ Em Vue, importamos o `.vue` puro da library:
 </template>
 
 <script setup>
-import { CourtCanvasVue } from 'court-canvas';
+import { CourtCanvasVue } from '@mlalbuquerque/court-canvas';
 </script>
 ```
 
