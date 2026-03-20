@@ -1,6 +1,6 @@
 {
   "name": "@mlalbuquerque/court-canvas",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Uma library agnóstica para renderização vetorial de prancheta tática.",
   "type": "module",
   "main": "dist/court-canvas.umd.cjs",
@@ -42,9 +42,15 @@
     "vue": ">=3.2.0"
   },
   "peerDependenciesMeta": {
-    "react": { "optional": true },
-    "react-dom": { "optional": true },
-    "vue": { "optional": true }
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "vue": {
+      "optional": true
+    }
   },
   "files": [
     "dist",
