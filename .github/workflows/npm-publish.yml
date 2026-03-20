@@ -3,7 +3,7 @@ name: Publish Court Canvas to NPM
 on:
   push:
     tags:
-      - 'v*.*.*' # Aciona apenas quando você criar uma tag local (ex: v1.0.1) e fizer o push
+      - 'v*.*.*'
 
 jobs:
   build-and-publish:
