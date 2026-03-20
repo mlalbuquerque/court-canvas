@@ -1,0 +1,31 @@
+name: Publish Court Canvas to NPM
+
+on:
+  push:
+    tags:
+      - 'v*.*.*' # Aciona apenas quando você criar uma tag local (ex: v1.0.1) e fizer o push
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Código do Repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar e Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Instalar Dependências (NPM)
+        run: npm ci
+
+      - name: Executar a Build da Biblioteca Vetorial (Vite Dist)
+        run: npm run build
+
+      - name: Publicar Pacote Oficialmente no NPM Registry
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
