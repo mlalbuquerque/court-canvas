@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Court Canvas Dev-Server</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 2rem;
+        background-color: #2c3e50;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: sans-serif;
+        color: white;
+      }
+      #app {
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .controls {
+        margin-top: 1rem;
+        display: flex;
+        gap: 1rem;
+      }
+      button {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+        background: #3498db;
+        border: none;
+        color: white;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+      button:hover { background: #2980b9; }
+    </style>
+  </head>
+  <body>
+    <h1>Tática: Court Canvas Local Test</h1>
+    <div id="app" tabindex="0" style="outline: none;"></div>
+    
+    <script type="module" src="/dev/main.js"></script>
+  </body>
+</html>
