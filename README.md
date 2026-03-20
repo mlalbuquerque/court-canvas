@@ -1,6 +1,8 @@
 # Court Canvas ⚽️
 Uma biblioteca **agnóstica, modular e focada na renderização vetorial** (2D) de pranchetas táticas esportivas baseada em *Konva.js*.
 
+![Court Canvas](court-canvas.jpg)
+
 O **Court Canvas** permite criar rapidamente um campo de futebol interativo onde você pode arrastar jogadores, desenhar marcações geométricas (retângulos, elipses, setas directionais) e, mais importante, **serializar e extrair** esse estado para JSON e Imagens (.png) para salvar tudo num banco de dados.
 
 ## ✨ Funcionalidades (O que o Motor Faz?)
