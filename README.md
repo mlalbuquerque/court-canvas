@@ -1,4 +1,4 @@
-# Court Canvas ⚽️
+# ![Court Canvas Icon](icon-64.png) Court Canvas
 Uma biblioteca **agnóstica, modular e focada na renderização vetorial** (2D) de pranchetas táticas esportivas baseada em *Konva.js*.
 
 ![Court Canvas](court-canvas.jpg)
