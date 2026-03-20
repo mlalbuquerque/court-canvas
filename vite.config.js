@@ -7,16 +7,22 @@ export default defineConfig({
   plugins: [vue(), react()],
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.js'),
-      name: 'CourtCanvas',
-      fileName: 'court-canvas',
+      entry: {
+        'court-canvas': resolve(__dirname, 'src/index.js'),
+        'react': resolve(__dirname, 'src/react/CourtCanvasReact.jsx'),
+        'vue': resolve(__dirname, 'src/vue/CourtCanvasVue.vue'),
+      },
+      formats: ['es', 'cjs'],
     },
     rollupOptions: {
-      external: ['vue', 'react'],
+      external: ['vue', 'react', 'react-dom', 'konva', 'sweetalert2'],
       output: {
         globals: {
           vue: 'Vue',
           react: 'React',
+          'react-dom': 'ReactDOM',
+          konva: 'Konva',
+          'sweetalert2': 'Swal',
         },
       },
     },

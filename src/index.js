@@ -9,7 +9,3 @@ export { default as ShapeTool } from './core/Tools/ShapeTool.js';
 // Exporters
 export { default as JsonExporter } from './core/Exporters/JsonExporter.js';
 export { default as ImageExporter } from './core/Exporters/ImageExporter.js';
-
-// Framework Wrappers
-export { default as CourtCanvasReact } from './react/CourtCanvasReact.jsx';
-export { default as CourtCanvasVue } from './vue/CourtCanvasVue.vue';

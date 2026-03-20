@@ -19,7 +19,7 @@ O **Court Canvas** permite criar rapidamente um campo de futebol interativo onde
 
 ## 🚀 Instalação
 
-O pacote está oficialmente distribuído no NPM Registry e fornece suporte *out-of-the-box* (nativamente tipado/compilado) para Vanilla JS, React e Vue.
+O pacote está oficialmente distribuído no NPM Registry e fornece suporte *out-of-the-box* (nativamente tipado/compilado) para Vanilla JS, React e Vue com pacotes separados para melhor performance.
 
 Para instalar na usa aplicação, rode:
 ```bash
@@ -34,41 +34,31 @@ npm install @mlalbuquerque/court-canvas
 
 > 💡 **Nota Importante:** Caso você queira ver um exemplo visual real, dinâmico e 100% funcional imediatamente após fazer o clone do pacote, basta abrir a pasta interna `dev/` do repositório! Ali nós mantemos um `index.html` e um `main.js` totalmente imersos na biblioteca Vanilla. Basta rodar o comando `npm run dev`.
 
-Você não precisa reescrever o motor para migrar de Tech-Stack. O Court Canvas se molda aos Wrappers oficiais.
-
 ### 1. Vanilla JavaScript (O HTML puro)
 ```html
 <div id="meu-campo"></div>
 <script type="module">
   import { CourtCanvas } from '@mlalbuquerque/court-canvas';
 
-  // Pronto! A Toolbar com os botões surge automaticamente ligada ao motor!
   const court = new CourtCanvas('meu-campo', { 
      width: 800, 
-     height: 500,
-     toolbar: {
-        visible: true,
-        position: 'bottom',
-        buttons: ['select', 'player-a', 'player-b', 'arrow', 'rect', 'ellipse', 'undo', 'redo', 'clear', 'export-png', 'export-json', 'help']
-     }
+     height: 500
   });
 </script>
 ```
 
 ### 2. Em Projetos ReactJS (`.jsx`)
-O pacote expõe um componente inteligente (wrapper) de carregamento em React.
+Importe o wrapper específico para React para evitar dependências desnecessárias de outros frameworks.
 
 ```jsx
 import React from 'react';
-import { CourtCanvasReact } from '@mlalbuquerque/court-canvas';
+import { CourtCanvasReact } from '@mlalbuquerque/court-canvas/react';
 
 const AppTatica = () => {
    return (
       <CourtCanvasReact 
           width={800} 
           height={500}
-          // A Toolbar nativa resolve tudo visualmente
-          toolbar={{ position: 'top' }} 
       />
    );
 };
@@ -77,17 +67,17 @@ export default AppTatica;
 ```
 
 ### 3. Em Projetos VueJS 3 (`.vue`)
-Em Vue, importamos o `.vue` puro da library:
+Importe o componente específico para Vue 3:
 
 ```vue
 <template>
   <main>
-    <CourtCanvasVue :width="800" :toolbar="{ position: 'bottom' }" />
+    <CourtCanvasVue :width="800" />
   </main>
 </template>
 
 <script setup>
-import { CourtCanvasVue } from '@mlalbuquerque/court-canvas';
+import { CourtCanvasVue } from '@mlalbuquerque/court-canvas/vue';
 </script>
 ```
 

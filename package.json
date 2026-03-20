@@ -3,12 +3,21 @@
   "version": "1.0.7",
   "description": "Uma library agnóstica para renderização vetorial de prancheta tática.",
   "type": "module",
-  "main": "dist/court-canvas.umd.cjs",
+  "main": "dist/court-canvas.cjs",
   "module": "dist/court-canvas.js",
+  "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "import": "./dist/court-canvas.js",
-      "require": "./dist/court-canvas.umd.cjs"
+      "require": "./dist/court-canvas.cjs"
+    },
+    "./react": {
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
+    },
+    "./vue": {
+      "import": "./dist/vue.js",
+      "require": "./dist/vue.cjs"
     }
   },
   "scripts": {
