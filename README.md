@@ -11,28 +11,44 @@ O **Court Canvas** permite criar rapidamente um campo de futebol interativo onde
 - 🧱 **Bounding Box Auto-Ajustável:** Suas peças de xadrez não saem para fora da linha do campo; algoritmos matemáticos seguram os elementos nas bordas corretas!
 - 🎨 **Customização Nativa:** A Toolbar possui seletores automáticos de cor da engine. Modifique a cor da equipe, estilos e passes perfeitamente na barra!
 - ⏪ **Viajante do Tempo:** Histórico de Estado 100% autônomo. Botões e Teclas de Atalho (`CTRL+Z` e `CTRL+Y`) suportados para desfazer e refazer marcações.
-- 📸 **Exportação Rica:** Salve sua tática em `JSON` para carregar num backend, ou renderize perfeitamente uma imagem em HQ (`.png`) da tática em um instante.
-- ✨ **Popups UI Modernos:** Prompts de renomeação de jogadores (`dblclick`) e caixas de ajuda alimentadas pelo `SweetAlert2` nativamente.
+- 📸 **Exportação e Importação:** Salve sua tática em `JSON` para carregar num backend, ou renderize uma imagem em HQ (`.png`) da tática em um instante. Você também pode **reimportar** payloads JSON para continuar editando táticas salvas!
+- ✨ **Popups UI Modernos:** Prompts de renomeação de jogadores (`dblclick`), importação de dados e caixas de ajuda alimentadas pelo `SweetAlert2` nativamente.
 - ⚛️ **Integração Agnóstica:** Pode ser executado em *Vanilla JS*, *ReactJS* ou *VueJS*.
 
 ---
 
-## 🚀 Instalação
+## 🛠 Desenvolvimento e Infraestrutura (Docker)
 
-O pacote está oficialmente distribuído no NPM Registry e fornece suporte *out-of-the-box* (nativamente tipado/compilado) para Vanilla JS, React e Vue com pacotes separados para melhor performance.
+Para garantir que todos os desenvolvedores usem a mesma versão do Node.js (v24+) e evitar conflitos de sistema, o projeto utiliza uma infraestrutura containerizada. **Você não precisa ter o Node instalado na sua máquina**, apenas o Docker.
 
-Para instalar na usa aplicação, rode:
+### Comandos de Atalho:
+Use os scripts na pasta `infra/` para rodar comandos NPM ou Node dentro do container:
+
+```bash
+# Instalar dependências
+./infra/npm install
+
+# Rodar o servidor de desenvolvimento
+./infra/npm run dev
+
+# Rodar qualquer comando NPX
+./infra/npx vitest
+```
+
+> 💡 **Dica:** O container mapeia automaticamente o seu usuário (`UID/GID`) e possui um volume de cache para o NPM, tornando a instalação de pacotes extremamente rápida.
+
+---
+
+## 🚀 Instalação (Uso em Produção)
+
+O pacote está oficialmente distribuído no NPM Registry:
 ```bash
 npm install @mlalbuquerque/court-canvas
 ```
 
-*(Observação: Se você for usar React ou Vue, tenha certeza de que eles também estão instalados no seu projeto. O Court Canvas os tem como `peerDependencies` opcionais).*
-
 ---
 
 ## 💻 Exemplos de Uso (Demos)
-
-> 💡 **Nota Importante:** Caso você queira ver um exemplo visual real, dinâmico e 100% funcional imediatamente após fazer o clone do pacote, basta abrir a pasta interna `dev/` do repositório! Ali nós mantemos um `index.html` e um `main.js` totalmente imersos na biblioteca Vanilla. Basta rodar o comando `npm run dev`.
 
 ### 1. Vanilla JavaScript (O HTML puro)
 ```html
@@ -40,80 +56,42 @@ npm install @mlalbuquerque/court-canvas
 <script type="module">
   import { CourtCanvas } from '@mlalbuquerque/court-canvas';
 
-  const court = new CourtCanvas('meu-campo', { 
-     width: 800, 
-     height: 500
-  });
+  // Inicialização simples
+  const court = new CourtCanvas('meu-campo', { width: 800, height: 500 });
+
+  // Carregando um estado salvo (JSON)
+  const savedState = '{"className":"Layer","children":[...]}';
+  const courtWithState = new CourtCanvas('outro-campo', { initialState: savedState });
 </script>
 ```
 
-### 2. Em Projetos ReactJS (`.jsx`)
-Importe o wrapper específico para React para evitar dependências desnecessárias de outros frameworks.
-
-```jsx
-import React from 'react';
-import { CourtCanvasReact } from '@mlalbuquerque/court-canvas/react';
-
-const AppTatica = () => {
-   return (
-      <CourtCanvasReact 
-          width={800} 
-          height={500}
-      />
-   );
-};
-
-export default AppTatica;
-```
-
-### 3. Em Projetos VueJS 3 (`.vue`)
-Importe o componente específico para Vue 3:
-
-```vue
-<template>
-  <main>
-    <CourtCanvasVue :width="800" />
-  </main>
-</template>
-
-<script setup>
-import { CourtCanvasVue } from '@mlalbuquerque/court-canvas/vue';
-</script>
-```
+*(Suporte para React e Vue também disponível via `@mlalbuquerque/court-canvas/react` e `@mlalbuquerque/court-canvas/vue`).*
 
 ---
 
-## 🧪 Testes
-O projeto utiliza uma estratégia de testes em duas camadas para garantir a estabilidade do motor e das integrações:
+## 🧪 Qualidade e Segurança
 
-### 1. Testes Unitários (Vitest)
-Focados na lógica do `StateManager`, `Exporters` e comportamento das ferramentas (`Tools`). Utiliza `jsdom` e `vitest-canvas-mock` para simular o ambiente de browser.
+O projeto possui um fluxo rigoroso de Garantia de Qualidade (QA):
 
-```bash
-# Rodar todos os testes unitários
-npm run test
-
-# Rodar testes com relatório de cobertura (coverage)
-npm run test:coverage
-```
-
-### 2. Testes de Ponta a Ponta (Playwright)
-Validam o fluxo completo do usuário (Happy Path) interagindo com a prancheta real no navegador.
+### 1. Testes Automatizados
+- **Unitários (Vitest):** Focados na lógica do `StateManager`, `Exporters` e `Tools`.
+- **E2E (Playwright):** Validam o fluxo completo do usuário no navegador.
 
 ```bash
-# Executar os testes E2E (Headless)
-npm run test:e2e
-
-# Abrir a interface visual do Playwright para depuração
-npx playwright test --ui
+./infra/npm run test       # Roda testes unitários
+./infra/npm run test:e2e   # Roda testes de ponta a ponta
 ```
+
+### 2. Bloqueio de Push (Husky)
+Existe um "Git Hook" configurado que impede o envio de código para o servidor (`git push`) se os testes não estiverem passando. Isso garante que a `main` esteja sempre estável.
+
+### 3. CI/CD (GitHub Actions)
+Toda alteração enviada ao GitHub dispara automaticamente o **Test Suite** na nuvem para uma validação final em ambiente limpo.
 
 ---
 
 ## 🛠 Arquitetura do Pacote
-Desenvolvimento Modular via *Monorepo*:
-
-* `src/core/`: Abriga o núcleo algorítmico agnóstico focado inteiramente no *Konva.js* original. Manipulação e Delegação de click.
-* `src/core/Tools/`: Padrão state e UI Interactivity (*PlayerTool*, *ArrowTool*, etc).
-* `src/core/Exporters/`: Classes isoladas formatadoras (`JsonExporter` e `ImageExporter`).
-* `src/react/` e `src/vue/`: Frameworks UI Wrappers encapsulando o construtor lógico e lidando com vazamento de memória e Unmounting de componentes nativamente.
+* `src/core/`: Núcleo algorítmico agnóstico focado em *Konva.js*.
+* `src/core/Tools/`: Ferramentas de interação (*PlayerTool*, *ArrowTool*, etc).
+* `src/core/Exporters/`: Formatadores de saída (`JsonExporter` e `ImageExporter`).
+* `src/react/` e `src/vue/`: Wrappers para frameworks UI modernos.

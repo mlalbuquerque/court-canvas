@@ -1,0 +1,27 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Código do Repositório
+        uses: actions/checkout@v4
+
+      - name: Instalar e Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Versão estável compatível com sua infra
+
+      - name: Instalar Dependências (NPM)
+        run: npm ci
+
+      - name: Executar Testes Unitários (Vitest)
+        # O comando 'run' garante que o Vitest feche após rodar, sem ficar em modo de vigia (watch)
+        run: npm test -- --run

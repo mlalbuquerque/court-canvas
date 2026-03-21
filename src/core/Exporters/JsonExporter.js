@@ -8,9 +8,13 @@ export default class JsonExporter {
     return this.court.interactiveLayer.toJSON();
   }
 
-  import(jsonString) {
+  import(json) {
+    // Se for string, tenta fazer parse para validar, se for objeto, usa direto
+    const payload = typeof json === 'string' ? json : JSON.stringify(json);
+    
     // Reconstroi utilizando o StateManager já programado
-    this.court.stateManager.loadState(jsonString);
+    this.court.stateManager.loadState(payload);
+    
     // Persiste no history do Undo/Redo como passo novo
     this.court.stateManager.saveState();
   }

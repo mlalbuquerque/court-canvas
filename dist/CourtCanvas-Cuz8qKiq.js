@@ -145,6 +145,27 @@ var n = class {
 					});
 				},
 				style: { background: "#27ae60" }
+			},
+			"import-json": {
+				icon: "📥",
+				tooltip: "Importar Payload JSON",
+				action: async () => {
+					let { value: e } = await t.fire({
+						title: "Importar Tática",
+						input: "textarea",
+						inputLabel: "Cole o JSON da tática abaixo",
+						inputPlaceholder: "{\"className\":\"Layer\", ...}",
+						showCancelButton: !0,
+						confirmButtonText: "Carregar",
+						cancelButtonText: "Cancelar"
+					});
+					if (e) try {
+						this.court.load(e), t.fire("Sucesso!", "Tática carregada com sucesso.", "success");
+					} catch (e) {
+						t.fire("Erro!", "JSON inválido ou corrompido.", "error"), console.error(e);
+					}
+				},
+				style: { background: "#2980b9" }
 			}
 		};
 		this.options.buttons.forEach((t) => {
@@ -190,7 +211,7 @@ var n = class {
 	showHelp() {
 		t.fire({
 			title: "Dicas Táticas ⚽",
-			html: "\n        <div style=\"text-align: left; font-size: 14px; line-height: 1.6;\">\n          <b>🖐 Selecionar:</b> Mova peças ou apague-as.<br>\n          <b>🔵/🔴 Jogadores:</b> Adiciona o time no campo. O motor segura as peças dentro das 4 linhas! Dê duplo-clique para mudar a camisa.<br>\n          <b>↗️ Setas:</b> Puxe e solte para traçar linhas de passe.<br>\n          <b>🔲/⭕ Formas:</b> Desenhe delimitações de área.<br>\n          <b>Teclado ⌨️:</b> <kbd>DELETE</kbd> ou <kbd>BACKSPACE</kbd> apaga o alvo. <kbd>CTRL+Z</kbd> refaz os passos e <kbd>CTRL+Y</kbd> adianta.\n        </div>\n      ",
+			html: "\n        <div style=\"text-align: left; font-size: 14px; line-height: 1.6;\">\n          <b>🖐 Selecionar:</b> Mova peças ou apague-as.<br>\n          <b>🔵/🔴 Jogadores:</b> Adiciona o time no campo. O motor segura as peças dentro das 4 linhas! Dê duplo-clique para mudar a camisa.<br>\n          <b>↗️ Setas:</b> Puxe e solte para traçar linhas de passe.<br>\n          <b>🔲/⭕ Formas:</b> Desenhe delimitações de área.<br>\n          <b>📥 Importar:</b> Cole um JSON de uma tática salva para rever ou editar.<br>\n          <b>Teclado ⌨️:</b> <kbd>DELETE</kbd> ou <kbd>BACKSPACE</kbd> apaga o alvo. <kbd>CTRL+Z</kbd> desfaz e <kbd>CTRL+Y</kbd> refaz.\n        </div>\n      ",
 			icon: "info",
 			confirmButtonText: "Bora!"
 		});
@@ -383,7 +404,8 @@ var n = class {
 		return this.court.interactiveLayer.toJSON();
 	}
 	import(e) {
-		this.court.stateManager.loadState(e), this.court.stateManager.saveState();
+		let t = typeof e == "string" ? e : JSON.stringify(e);
+		this.court.stateManager.loadState(t), this.court.stateManager.saveState();
 	}
 }, u = class {
 	constructor(e) {
@@ -410,6 +432,7 @@ var n = class {
 			height: t.height || 500,
 			backgroundColor: t.backgroundColor || "#4caf50",
 			lineColor: t.lineColor || "#ffffff",
+			initialState: t.initialState || null,
 			toolbar: t.toolbar === void 0 ? { buttons: [
 				"select",
 				"player-a",
@@ -422,10 +445,14 @@ var n = class {
 				"clear",
 				"export-png",
 				"export-json",
+				"import-json",
 				"help"
 			] } : t.toolbar,
 			...t
-		}, this.stateManager = new n(this), this.jsonExporter = new l(this), this.imageExporter = new u(this), this.initKonva(), this.initTools(), this.options.toolbar !== !1 && (this.toolbar = new r(this, this.options.toolbar)), this.drawPitch();
+		}, this.stateManager = new n(this), this.jsonExporter = new l(this), this.imageExporter = new u(this), this.initKonva(), this.initTools(), this.options.initialState ? this.load(this.options.initialState) : this.stateManager.saveState(), this.options.toolbar !== !1 && (this.toolbar = new r(this, this.options.toolbar)), this.drawPitch();
+	}
+	load(e) {
+		this.jsonExporter.import(e);
 	}
 	initTools() {
 		this.tools = {

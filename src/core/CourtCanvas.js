@@ -18,8 +18,9 @@ export default class CourtCanvas {
       height: options.height || 500,
       backgroundColor: options.backgroundColor || '#4caf50',
       lineColor: options.lineColor || '#ffffff',
+      initialState: options.initialState || null,
       toolbar: options.toolbar !== undefined ? options.toolbar : {
-        buttons: ['select', 'player-a', 'player-b', 'arrow', 'rect', 'ellipse', 'undo', 'redo', 'clear', 'export-png', 'export-json', 'help']
+        buttons: ['select', 'player-a', 'player-b', 'arrow', 'rect', 'ellipse', 'undo', 'redo', 'clear', 'export-png', 'export-json', 'import-json', 'help']
       },
       ...options
     };
@@ -31,12 +32,28 @@ export default class CourtCanvas {
     this.initKonva();
     this.initTools();
     
+    // Se houver estado inicial, carrega
+    if (this.options.initialState) {
+      this.load(this.options.initialState);
+    } else {
+      // Caso contrário, salva o estado vazio inicial no histórico
+      this.stateManager.saveState();
+    }
+    
     // Inject native UI toolbar?
     if (this.options.toolbar !== false) {
        this.toolbar = new Toolbar(this, this.options.toolbar);
     }
     
     this.drawPitch();
+  }
+
+  /**
+   * Carrega um estado JSON na camada interativa
+   * @param {String|Object} json 
+   */
+  load(json) {
+    this.jsonExporter.import(json);
   }
 
   initTools() {

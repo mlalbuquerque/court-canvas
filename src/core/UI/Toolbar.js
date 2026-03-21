@@ -72,7 +72,28 @@ export default class Toolbar {
             icon: 'success',
             confirmButtonText: 'Entendido'
           });
-       }, style: { background: '#27ae60' } }
+       }, style: { background: '#27ae60' } },
+      'import-json': { icon: '📥', tooltip: 'Importar Payload JSON', action: async () => {
+          const { value: json } = await Swal.fire({
+            title: 'Importar Tática',
+            input: 'textarea',
+            inputLabel: 'Cole o JSON da tática abaixo',
+            inputPlaceholder: '{"className":"Layer", ...}',
+            showCancelButton: true,
+            confirmButtonText: 'Carregar',
+            cancelButtonText: 'Cancelar'
+          });
+          
+          if (json) {
+            try {
+              this.court.load(json);
+              Swal.fire('Sucesso!', 'Tática carregada com sucesso.', 'success');
+            } catch (err) {
+              Swal.fire('Erro!', 'JSON inválido ou corrompido.', 'error');
+              console.error(err);
+            }
+          }
+      }, style: { background: '#2980b9' } }
     };
 
     this.options.buttons.forEach(btnKey => {
@@ -169,7 +190,8 @@ export default class Toolbar {
           <b>🔵/🔴 Jogadores:</b> Adiciona o time no campo. O motor segura as peças dentro das 4 linhas! Dê duplo-clique para mudar a camisa.<br>
           <b>↗️ Setas:</b> Puxe e solte para traçar linhas de passe.<br>
           <b>🔲/⭕ Formas:</b> Desenhe delimitações de área.<br>
-          <b>Teclado ⌨️:</b> <kbd>DELETE</kbd> ou <kbd>BACKSPACE</kbd> apaga o alvo. <kbd>CTRL+Z</kbd> refaz os passos e <kbd>CTRL+Y</kbd> adianta.
+          <b>📥 Importar:</b> Cole um JSON de uma tática salva para rever ou editar.<br>
+          <b>Teclado ⌨️:</b> <kbd>DELETE</kbd> ou <kbd>BACKSPACE</kbd> apaga o alvo. <kbd>CTRL+Z</kbd> desfaz e <kbd>CTRL+Y</kbd> refaz.
         </div>
       `,
       icon: 'info',
