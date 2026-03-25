@@ -21,9 +21,9 @@
     }
   },
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host",
     "build": "vite build",
-    "preview": "vite preview",
+    "preview": "vite --host preview",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",

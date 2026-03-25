@@ -20,19 +20,31 @@ fi
 CACHE_VOL="court-canvas-npm-cache"
 docker volume create $CACHE_VOL > /dev/null 2>&1
 
+# Monta volumes dinamicamente baseado na disponibilidade do ambiente
+VOLUMES=(
+  -v "$(pwd):/app"
+  -v "$CACHE_VOL:/cache/npm"
+  -v "$HOME/.gitconfig:/etc/gitconfig:ro"
+)
+
+ENV_VARS=(
+  -e "npm_config_cache=/cache/npm"
+)
+
+# Adiciona SSH agent se disponível
+if [ -n "$SSH_AUTH_SOCK" ]; then
+  VOLUMES+=(-v "$SSH_AUTH_SOCK:/run/ssh-agent")
+  ENV_VARS+=(-e "SSH_AUTH_SOCK=/run/ssh-agent")
+fi
+
 # Executa o Docker
-# -u: Garante que os arquivos gerados (node_modules, etc) pertençam a você no Linux
-# -v: Monta o código atual em /app, o cache em /cache/npm, as chaves SSH e a configuração global do Git
-# -e: Informa ao NPM para usar a pasta de cache otimizada e o socket do agente SSH
-# -w: Define o diretório inicial do container como /app
 docker run --rm -it \
+  --init \
   --name "court-canvas-node-$(date +%s)" \
   -u "$(id -u):$(id -g)" \
-  -v "$(pwd):/app" \
-  -v "$CACHE_VOL:/cache/npm" \
-  -v "$SSH_AUTH_SOCK:/run/ssh-agent" \
-  -v "$HOME/.gitconfig:/etc/gitconfig:ro" \
-  -e "npm_config_cache=/cache/npm" \
-  -e "SSH_AUTH_SOCK=/run/ssh-agent" \
+  -p 5173:5173 \
+  -p 4173:4173 \
+  "${VOLUMES[@]}" \
+  "${ENV_VARS[@]}" \
   -w /app \
   "$IMAGE_NAME" "$@"

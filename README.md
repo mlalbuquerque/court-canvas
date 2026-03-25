@@ -9,7 +9,8 @@ O **Court Canvas** permite criar rapidamente um campo de futebol interativo onde
 - 🏟️ **Design Preciso:** Background matemático renderizando grandes e pequenas áreas perfeitamente dimensionadas.
 - 🖐 **Interatividade Completa (Drag & Drop):** Padrão *State* nas ferramentas (clique e arraste jogadores para construir a tática).
 - 🧱 **Bounding Box Auto-Ajustável:** Suas peças de xadrez não saem para fora da linha do campo; algoritmos matemáticos seguram os elementos nas bordas corretas!
-- 🎨 **Customização Nativa:** A Toolbar possui seletores automáticos de cor da engine. Modifique a cor da equipe, estilos e passes perfeitamente na barra!
+- 🎨 **Toolbar Inteligente:** Destaque visual da ferramenta ativa e seletores automáticos de cor. Modifique a cor da equipe, estilos e passes diretamente na barra!
+- 🖱️ **Cursores Contextuais:** O ponteiro do mouse muda conforme a ferramenta (Mão para seleção, Cruz para desenho, Mira para jogadores), tornando a experiência intuitiva.
 - ⏪ **Viajante do Tempo:** Histórico de Estado 100% autônomo. Botões e Teclas de Atalho (`CTRL+Z` e `CTRL+Y`) suportados para desfazer e refazer marcações.
 - 📸 **Exportação e Importação:** Salve sua tática em `JSON` para carregar num backend, ou renderize uma imagem em HQ (`.png`) da tática em um instante. Você também pode **reimportar** payloads JSON para continuar editando táticas salvas!
 - ✨ **Popups UI Modernos:** Prompts de renomeação de jogadores (`dblclick`), importação de dados e caixas de ajuda alimentadas pelo `SweetAlert2` nativamente.
@@ -35,8 +36,6 @@ Use os scripts na pasta `infra/` para rodar comandos NPM ou Node dentro do conta
 ./infra/npx vitest
 ```
 
-> 💡 **Dica:** O container mapeia automaticamente o seu usuário (`UID/GID`) e possui um volume de cache para o NPM, tornando a instalação de pacotes extremamente rápida.
-
 ---
 
 ## 🚀 Instalação (Uso em Produção)
@@ -49,6 +48,41 @@ npm install @mlalbuquerque/court-canvas
 ---
 
 ## 💻 Exemplos de Uso (Demos)
+
+### 1. Customização Avançada (Ícones, Emojis e Ferramentas)
+Você pode estender a biblioteca com seus próprios ícones (arquivos de imagem) ou usar **Emojis/Texto** diretamente como avatares.
+
+> 💡 **Dica:** A propriedade `imageUrl` carrega arquivos externos (preferencialmente SVGs), enquanto a propriedade `image` aceita strings de texto ou emojis.
+
+```javascript
+import { CourtCanvas } from '@mlalbuquerque/court-canvas';
+
+const court = new CourtCanvas('meu-campo', {
+  width: 800,
+  height: 500,
+  customTools: [
+    { 
+      id: 'ball', 
+      type: 'stamp', 
+      icon: '⚽', 
+      imageUrl: 'https://exemplo.com/bola.svg', // Carrega arquivo de imagem
+      label: 'Bola de Futebol'
+    },
+    {
+      id: 'custom-player',
+      type: 'player',
+      icon: '👤',
+      image: '👤', // Usa emoji diretamente como avatar do jogador
+      label: 'Jogador Especial',
+      numberPosition: 'bottom-right' // 'center' (padrão) ou 'bottom-right'
+    }
+  ],
+  toolbar: {
+    // Escolha quais botões exibir e a ordem
+    buttons: ['select', 'player-a', 'player-b', 'custom-player', 'ball', 'arrow', 'clear']
+  }
+});
+```
 
 ### 1. Vanilla JavaScript (O HTML puro)
 ```html
@@ -65,7 +99,65 @@ npm install @mlalbuquerque/court-canvas
 </script>
 ```
 
-*(Suporte para React e Vue também disponível via `@mlalbuquerque/court-canvas/react` e `@mlalbuquerque/court-canvas/vue`).*
+### 2. React
+```jsx
+import React, { useState } from 'react';
+import CourtCanvasReact from '@mlalbuquerque/court-canvas/react';
+
+const TacticalBoard = () => {
+  const [court, setCourt] = useState(null);
+
+  const handleExport = () => {
+    if (court) {
+      const data = court.jsonExporter.export();
+      console.log('JSON da tática:', data);
+    }
+  };
+
+  return (
+    <div>
+      <CourtCanvasReact 
+        onCanvasReady={(instance) => setCourt(instance)}
+        width={800}
+        height={500}
+      />
+      <button onClick={handleExport}>Exportar JSON</button>
+    </div>
+  );
+};
+```
+
+### 3. Vue 3 (Composition API)
+```vue
+<template>
+  <div>
+    <CourtCanvasVue 
+      @ready="onReady"
+      :width="800"
+      :height="500"
+    />
+    <button @click="handleExport">Exportar JSON</button>
+  </div>
+</template>
+
+<script setup>
+import CourtCanvasVue from '@mlalbuquerque/court-canvas/vue';
+import { ref } from 'vue';
+
+const court = ref(null);
+
+const onReady = (instance) => {
+  court.value = instance;
+};
+
+const handleExport = () => {
+  if (court.value) {
+    const data = court.value.jsonExporter.export();
+    console.log('JSON da tática:', data);
+  }
+};
+</script>
+```
 
 ---
 

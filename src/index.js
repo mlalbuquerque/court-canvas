@@ -5,6 +5,7 @@ export { default as SelectTool } from './core/Tools/SelectTool.js';
 export { default as PlayerTool } from './core/Tools/PlayerTool.js';
 export { default as ArrowTool } from './core/Tools/ArrowTool.js';
 export { default as ShapeTool } from './core/Tools/ShapeTool.js';
+export { default as StampTool } from './core/Tools/StampTool.js';
 
 // Exporters
 export { default as JsonExporter } from './core/Exporters/JsonExporter.js';

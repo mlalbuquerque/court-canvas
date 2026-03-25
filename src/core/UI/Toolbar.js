@@ -35,15 +35,16 @@ export default class Toolbar {
     // Apply styling
     Object.assign(this.toolbarElement.style, this.options.style);
 
+    this.buttonElements = {};
     this.createButtons();
     this.injectIntoDOM();
+    
+    // Inicializar o destaque do botão ativo
+    this.updateActiveButton();
   }
 
   injectIntoDOM() {
-    // If setting position relative to container
     this.container.style.position = 'relative';
-    
-    // Simplest way is to append it after or inside the container depending on position
     if (this.options.position === 'top') {
       this.container.insertBefore(this.toolbarElement, this.container.firstChild);
     } else {
@@ -51,9 +52,41 @@ export default class Toolbar {
     }
   }
 
+  updateActiveButton() {
+    const currentTool = this.court.currentTool;
+    if (!currentTool) return;
+
+    Object.entries(this.buttonElements).forEach(([btnKey, element]) => {
+      // Verifica se a ferramenta do botão é a mesma que a ferramenta atual da court
+      const isActive = this.checkIfButtonIsActive(btnKey, currentTool);
+      
+      if (isActive) {
+        element.style.outline = '2px solid #3498db';
+        element.style.boxShadow = '0 0 8px rgba(52, 152, 219, 0.6)';
+        element.style.background = '#2c3e50';
+      } else {
+        element.style.outline = 'none';
+        element.style.boxShadow = 'none';
+        element.style.background = (this.baseButtonMap[btnKey] && this.baseButtonMap[btnKey].style && this.baseButtonMap[btnKey].style.background) || '#34495e';
+      }
+    });
+  }
+
+  checkIfButtonIsActive(btnKey, currentTool) {
+    const config = this.baseButtonMap[btnKey];
+    if (!config || !config.getTool) return false;
+    
+    try {
+      const toolInstance = config.getTool();
+      return toolInstance === currentTool;
+    } catch (e) {
+      return false;
+    }
+  }
+
   createButtons() {
-    const buttonMap = {
-      'select':   { icon: '🖐', tooltip: 'Selecionar / Mover', action: () => this.court.setTool(this.court.tools.select) },
+    this.baseButtonMap = {
+      'select':   { icon: '🖐', tooltip: 'Selecionar / Mover', action: () => this.court.setTool(this.court.tools.select), getTool: () => this.court.tools.select },
       'player-a': { icon: '🔵', tooltip: 'Time A', action: () => this.court.setTool(this.court.tools.playerA), hasColor: true, getTool: () => this.court.tools.playerA, colorProp: 'teamColor' },
       'player-b': { icon: '🔴', tooltip: 'Time B', action: () => this.court.setTool(this.court.tools.playerB), hasColor: true, getTool: () => this.court.tools.playerB, colorProp: 'teamColor' },
       'arrow':    { icon: '↗️', tooltip: 'Desenhar Seta', action: () => this.court.setTool(this.court.tools.arrow), hasColor: true, getTool: () => this.court.tools.arrow, colorProp: 'color' },
@@ -66,52 +99,55 @@ export default class Toolbar {
       'export-png': { icon: '📸', tooltip: 'Baixar Imagem (.png)', action: () => this.court.imageExporter.downloadImage(`tatica_${Date.now()}.png`), style: { background: '#9b59b6' } },
       'export-json': { icon: '📋', tooltip: 'Extrair Payload JSON', action: () => { 
           console.log(this.court.jsonExporter.export()); 
-          Swal.fire({
-            title: 'Tática Pronta!',
-            text: 'A string JSON do estado atual foi gerada e enviada para o F12 (Console) do seu navegador.',
-            icon: 'success',
-            confirmButtonText: 'Entendido'
-          });
+          Swal.fire({ title: 'Tática Pronta!', text: 'JSON gerado no console (F12).', icon: 'success' });
        }, style: { background: '#27ae60' } },
       'import-json': { icon: '📥', tooltip: 'Importar Payload JSON', action: async () => {
           const { value: json } = await Swal.fire({
             title: 'Importar Tática',
             input: 'textarea',
-            inputLabel: 'Cole o JSON da tática abaixo',
-            inputPlaceholder: '{"className":"Layer", ...}',
-            showCancelButton: true,
-            confirmButtonText: 'Carregar',
-            cancelButtonText: 'Cancelar'
+            showCancelButton: true
           });
-          
           if (json) {
-            try {
-              this.court.load(json);
-              Swal.fire('Sucesso!', 'Tática carregada com sucesso.', 'success');
-            } catch (err) {
-              Swal.fire('Erro!', 'JSON inválido ou corrompido.', 'error');
-              console.error(err);
-            }
+            try { this.court.load(json); Swal.fire('Sucesso!', 'Tática carregada.', 'success'); }
+            catch (err) { Swal.fire('Erro!', 'JSON inválido.', 'error'); }
           }
       }, style: { background: '#2980b9' } }
     };
 
+    // Adicionar botões para ferramentas customizadas dinamicamente
+    this.court.options.customTools.forEach(toolConfig => {
+      this.baseButtonMap[toolConfig.id] = {
+        icon: toolConfig.icon || '🛠',
+        tooltip: toolConfig.label || toolConfig.id,
+        action: () => this.court.setTool(this.court.tools[toolConfig.id]),
+        // Se for do tipo player sem imagem, permite mudar cor. Se tiver imagem, cor é fixa.
+        hasColor: toolConfig.type === 'player' && !toolConfig.imageUrl,
+        getTool: () => this.court.tools[toolConfig.id],
+        colorProp: 'teamColor'
+      };
+      
+      // Se o usuário não especificou a lista de botões explicitamente, adiciona o novo botão ao final
+      if (!this.options.buttons.includes(toolConfig.id)) {
+        this.options.buttons.push(toolConfig.id);
+      }
+    });
+
     this.options.buttons.forEach(btnKey => {
-      const config = buttonMap[btnKey];
+      const config = this.baseButtonMap[btnKey];
       if (!config) return;
 
       const container = document.createElement('div');
-      container.style.display = 'flex';
-      container.style.alignItems = 'stretch';
-      container.style.background = '#34495e';
-      container.style.borderRadius = '4px';
-      container.style.transition = 'transform 0.2s';
+      this.buttonElements[btnKey] = container;
+      Object.assign(container.style, {
+        display: 'flex',
+        alignItems: 'stretch',
+        background: '#34495e',
+        borderRadius: '4px',
+        transition: 'transform 0.2s',
+        ...(config.style || {})
+      });
       container.addEventListener('mouseenter', () => container.style.transform = 'scale(1.05)');
       container.addEventListener('mouseleave', () => container.style.transform = 'scale(1)');
-
-      if (config.style) {
-        Object.assign(container.style, config.style);
-      }
 
       const btn = document.createElement('button');
       btn.innerHTML = config.icon;
@@ -124,22 +160,16 @@ export default class Toolbar {
         color: 'white',
         fontSize: '16px',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        alignItems: 'center'
       });
       btn.addEventListener('click', config.action);
       container.appendChild(btn);
 
-      // Adicionar color picker se a ferramenta possuir suporte
       if (config.hasColor && config.getTool) {
         const colorInput = document.createElement('input');
         colorInput.type = 'color';
-        colorInput.title = `Mudar cor (${config.tooltip})`;
-        
-        // Pega a cor inicial diretamente da instância nativa da ferramenta
         const toolInstance = config.getTool();
         colorInput.value = toolInstance[config.colorProp];
-        
         Object.assign(colorInput.style, {
           width: '24px',
           border: 'none',
@@ -147,18 +177,12 @@ export default class Toolbar {
           margin: '0',
           cursor: 'pointer',
           background: 'transparent',
-          borderLeft: '1px solid rgba(255,255,255,0.2)',
-          borderTopRightRadius: '4px',
-          borderBottomRightRadius: '4px'
+          borderLeft: '1px solid rgba(255,255,255,0.2)'
         });
-
-        // Quando o usuário escolhe a cor, atualiza dinamicamente a propriedade da ferramenta
         colorInput.addEventListener('input', (e) => {
           toolInstance[config.colorProp] = e.target.value;
-          // Automagicamente troca para a ferramenta se o usuario modificou a cor dela
           this.court.setTool(toolInstance); 
         });
-
         container.appendChild(colorInput);
       }
 
@@ -171,12 +195,9 @@ export default class Toolbar {
     this.court.transformer = new window.Konva.Transformer({ nodes: [] });
     this.court.interactiveLayer.add(this.court.transformer);
     this.court.interactiveLayer.draw();
-    
-    // Reset player incremental counts
-    if (this.court.tools.playerA) this.court.tools.playerA.playerCount = 1;
-    if (this.court.tools.playerB) this.court.tools.playerB.playerCount = 1;
-    
-    // Clear History
+    Object.values(this.court.tools).forEach(tool => {
+      if (tool.playerCount !== undefined) tool.playerCount = 1;
+    });
     this.court.stateManager.history = [];
     this.court.stateManager.historyStep = -1;
   }
@@ -187,15 +208,12 @@ export default class Toolbar {
       html: `
         <div style="text-align: left; font-size: 14px; line-height: 1.6;">
           <b>🖐 Selecionar:</b> Mova peças ou apague-as.<br>
-          <b>🔵/🔴 Jogadores:</b> Adiciona o time no campo. O motor segura as peças dentro das 4 linhas! Dê duplo-clique para mudar a camisa.<br>
-          <b>↗️ Setas:</b> Puxe e solte para traçar linhas de passe.<br>
-          <b>🔲/⭕ Formas:</b> Desenhe delimitações de área.<br>
-          <b>📥 Importar:</b> Cole um JSON de uma tática salva para rever ou editar.<br>
-          <b>Teclado ⌨️:</b> <kbd>DELETE</kbd> ou <kbd>BACKSPACE</kbd> apaga o alvo. <kbd>CTRL+Z</kbd> desfaz e <kbd>CTRL+Y</kbd> refaz.
+          <b>🔵/🔴 Jogadores:</b> Adiciona o time no campo. Dê duplo-clique para mudar a camisa.<br>
+          <b>🛠 Ferramentas Extras:</b> Use cones, bolas e ícones personalizados se configurados.<br>
+          <b>Teclado ⌨️:</b> <kbd>DELETE</kbd> apaga o alvo. <kbd>CTRL+Z</kbd> desfaz e <kbd>CTRL+Y</kbd> refaz.
         </div>
       `,
-      icon: 'info',
-      confirmButtonText: 'Bora!'
+      icon: 'info'
     });
   }
 }

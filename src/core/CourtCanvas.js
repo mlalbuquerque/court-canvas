@@ -6,6 +6,7 @@ import SelectTool from './Tools/SelectTool.js';
 import PlayerTool from './Tools/PlayerTool.js';
 import ArrowTool from './Tools/ArrowTool.js';
 import ShapeTool from './Tools/ShapeTool.js';
+import StampTool from './Tools/StampTool.js';
 
 import JsonExporter from './Exporters/JsonExporter.js';
 import ImageExporter from './Exporters/ImageExporter.js';
@@ -19,6 +20,7 @@ export default class CourtCanvas {
       backgroundColor: options.backgroundColor || '#4caf50',
       lineColor: options.lineColor || '#ffffff',
       initialState: options.initialState || null,
+      customTools: options.customTools || [],
       toolbar: options.toolbar !== undefined ? options.toolbar : {
         buttons: ['select', 'player-a', 'player-b', 'arrow', 'rect', 'ellipse', 'undo', 'redo', 'clear', 'export-png', 'export-json', 'import-json', 'help']
       },
@@ -59,12 +61,21 @@ export default class CourtCanvas {
   initTools() {
     this.tools = {
       select: new SelectTool(this),
-      playerA: new PlayerTool(this, '#3498db', '#ffffff'),
-      playerB: new PlayerTool(this, '#e74c3c', '#ffffff'),
+      playerA: new PlayerTool(this, { teamColor: '#3498db', textColor: '#ffffff' }),
+      playerB: new PlayerTool(this, { teamColor: '#e74c3c', textColor: '#ffffff' }),
       arrow: new ArrowTool(this, '#e74c3c'),
       rect: new ShapeTool(this, 'rect', '#f39c12'),
       ellipse: new ShapeTool(this, 'ellipse', '#f39c12')
     };
+    
+    // Registrar ferramentas customizadas
+    this.options.customTools.forEach(config => {
+      if (config.type === 'stamp') {
+        this.tools[config.id] = new StampTool(this, config);
+      } else if (config.type === 'player') {
+        this.tools[config.id] = new PlayerTool(this, config);
+      }
+    });
     
     this.setTool(this.tools.select);
   }
@@ -152,11 +163,15 @@ export default class CourtCanvas {
     if (this.currentTool && this.currentTool.activate) {
       this.currentTool.activate();
     }
+
+    if (this.toolbar) {
+      this.toolbar.updateActiveButton();
+    }
   }
   
   setDraggableElements(isDraggable) {
     const interactables = this.interactiveLayer.find(node => {
-      return node.name() === 'player' || node.name() === 'arrow' || node.name() === 'shape';
+      return node.name() === 'player' || node.name() === 'arrow' || node.name() === 'shape' || node.name() === 'stamp';
     });
     
     interactables.forEach(node => {
@@ -179,15 +194,28 @@ export default class CourtCanvas {
     }
 
     const interactables = this.interactiveLayer.find(node => {
-      return node.name() === 'player' || node.name() === 'shape';
+      return node.name() === 'player' || node.name() === 'shape' || node.name() === 'stamp';
     });
     
     interactables.forEach(node => {
-      if (node.name() === 'player') {
+      // Re-hidratação de Imagens
+      const imageUrl = node.getAttr('imageUrl');
+      if (imageUrl) {
+        const imgNode = node.nodeType === 'Group' ? node.findOne('Image') : node;
+        if (imgNode && imgNode.className === 'Image') {
+          const img = new Image();
+          img.onload = () => {
+            imgNode.image(img);
+            this.interactiveLayer.batchDraw();
+          };
+          img.src = imageUrl;
+        }
+      }
+
+      if (node.name() === 'player' || node.name() === 'stamp') {
          node.on('dragmove', () => {
-             // O PlayerTool já injetava isso, mas agora que carregamos do serializado,
-             // o padding eh manual
-             const limit = 20 + 15;
+             const radius = node.name() === 'player' ? 15 : (node.width() / 2);
+             const limit = 20 + radius;
              let x = node.x(); let y = node.y();
              if (x < limit) x = limit; 
              if (x > this.options.width - limit) x = this.options.width - limit;

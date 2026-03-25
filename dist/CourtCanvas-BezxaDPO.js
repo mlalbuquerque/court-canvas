@@ -139,9 +139,8 @@ var n = class {
 				action: () => {
 					console.log(this.court.jsonExporter.export()), t.fire({
 						title: "Tática Pronta!",
-						text: "A string JSON do estado atual foi gerada e enviada para o F12 (Console) do seu navegador.",
-						icon: "success",
-						confirmButtonText: "Entendido"
+						text: "JSON gerado no console (F12).",
+						icon: "success"
 					});
 				},
 				style: { background: "#27ae60" }
@@ -153,26 +152,38 @@ var n = class {
 					let { value: e } = await t.fire({
 						title: "Importar Tática",
 						input: "textarea",
-						inputLabel: "Cole o JSON da tática abaixo",
-						inputPlaceholder: "{\"className\":\"Layer\", ...}",
-						showCancelButton: !0,
-						confirmButtonText: "Carregar",
-						cancelButtonText: "Cancelar"
+						showCancelButton: !0
 					});
 					if (e) try {
-						this.court.load(e), t.fire("Sucesso!", "Tática carregada com sucesso.", "success");
-					} catch (e) {
-						t.fire("Erro!", "JSON inválido ou corrompido.", "error"), console.error(e);
+						this.court.load(e), t.fire("Sucesso!", "Tática carregada.", "success");
+					} catch {
+						t.fire("Erro!", "JSON inválido.", "error");
 					}
 				},
 				style: { background: "#2980b9" }
 			}
 		};
-		this.options.buttons.forEach((t) => {
+		this.court.options.customTools.forEach((t) => {
+			e[t.id] = {
+				icon: t.icon || "🛠",
+				tooltip: t.label || t.id,
+				action: () => this.court.setTool(this.court.tools[t.id]),
+				hasColor: t.type === "player" && !t.imageUrl,
+				getTool: () => this.court.tools[t.id],
+				colorProp: "teamColor"
+			}, this.options.buttons.includes(t.id) || this.options.buttons.push(t.id);
+		}), this.options.buttons.forEach((t) => {
 			let n = e[t];
 			if (!n) return;
 			let r = document.createElement("div");
-			r.style.display = "flex", r.style.alignItems = "stretch", r.style.background = "#34495e", r.style.borderRadius = "4px", r.style.transition = "transform 0.2s", r.addEventListener("mouseenter", () => r.style.transform = "scale(1.05)"), r.addEventListener("mouseleave", () => r.style.transform = "scale(1)"), n.style && Object.assign(r.style, n.style);
+			Object.assign(r.style, {
+				display: "flex",
+				alignItems: "stretch",
+				background: "#34495e",
+				borderRadius: "4px",
+				transition: "transform 0.2s",
+				...n.style || {}
+			}), r.addEventListener("mouseenter", () => r.style.transform = "scale(1.05)"), r.addEventListener("mouseleave", () => r.style.transform = "scale(1)");
 			let i = document.createElement("button");
 			if (i.innerHTML = n.icon, i.title = n.tooltip, Object.assign(i.style, {
 				padding: "8px 12px",
@@ -182,11 +193,10 @@ var n = class {
 				color: "white",
 				fontSize: "16px",
 				display: "flex",
-				alignItems: "center",
-				justifyContent: "center"
+				alignItems: "center"
 			}), i.addEventListener("click", n.action), r.appendChild(i), n.hasColor && n.getTool) {
 				let e = document.createElement("input");
-				e.type = "color", e.title = `Mudar cor (${n.tooltip})`;
+				e.type = "color";
 				let t = n.getTool();
 				e.value = t[n.colorProp], Object.assign(e.style, {
 					width: "24px",
@@ -195,9 +205,7 @@ var n = class {
 					margin: "0",
 					cursor: "pointer",
 					background: "transparent",
-					borderLeft: "1px solid rgba(255,255,255,0.2)",
-					borderTopRightRadius: "4px",
-					borderBottomRightRadius: "4px"
+					borderLeft: "1px solid rgba(255,255,255,0.2)"
 				}), e.addEventListener("input", (e) => {
 					t[n.colorProp] = e.target.value, this.court.setTool(t);
 				}), r.appendChild(e);
@@ -206,14 +214,15 @@ var n = class {
 		});
 	}
 	clearCanvas() {
-		this.court.interactiveLayer.destroyChildren(), this.court.transformer = new window.Konva.Transformer({ nodes: [] }), this.court.interactiveLayer.add(this.court.transformer), this.court.interactiveLayer.draw(), this.court.tools.playerA && (this.court.tools.playerA.playerCount = 1), this.court.tools.playerB && (this.court.tools.playerB.playerCount = 1), this.court.stateManager.history = [], this.court.stateManager.historyStep = -1;
+		this.court.interactiveLayer.destroyChildren(), this.court.transformer = new window.Konva.Transformer({ nodes: [] }), this.court.interactiveLayer.add(this.court.transformer), this.court.interactiveLayer.draw(), Object.values(this.court.tools).forEach((e) => {
+			e.playerCount !== void 0 && (e.playerCount = 1);
+		}), this.court.stateManager.history = [], this.court.stateManager.historyStep = -1;
 	}
 	showHelp() {
 		t.fire({
 			title: "Dicas Táticas ⚽",
-			html: "\n        <div style=\"text-align: left; font-size: 14px; line-height: 1.6;\">\n          <b>🖐 Selecionar:</b> Mova peças ou apague-as.<br>\n          <b>🔵/🔴 Jogadores:</b> Adiciona o time no campo. O motor segura as peças dentro das 4 linhas! Dê duplo-clique para mudar a camisa.<br>\n          <b>↗️ Setas:</b> Puxe e solte para traçar linhas de passe.<br>\n          <b>🔲/⭕ Formas:</b> Desenhe delimitações de área.<br>\n          <b>📥 Importar:</b> Cole um JSON de uma tática salva para rever ou editar.<br>\n          <b>Teclado ⌨️:</b> <kbd>DELETE</kbd> ou <kbd>BACKSPACE</kbd> apaga o alvo. <kbd>CTRL+Z</kbd> desfaz e <kbd>CTRL+Y</kbd> refaz.\n        </div>\n      ",
-			icon: "info",
-			confirmButtonText: "Bora!"
+			html: "\n        <div style=\"text-align: left; font-size: 14px; line-height: 1.6;\">\n          <b>🖐 Selecionar:</b> Mova peças ou apague-as.<br>\n          <b>🔵/🔴 Jogadores:</b> Adiciona o time no campo. Dê duplo-clique para mudar a camisa.<br>\n          <b>🛠 Ferramentas Extras:</b> Use cones, bolas e ícones personalizados se configurados.<br>\n          <b>Teclado ⌨️:</b> <kbd>DELETE</kbd> apaga o alvo. <kbd>CTRL+Z</kbd> desfaz e <kbd>CTRL+Y</kbd> refaz.\n        </div>\n      ",
+			icon: "info"
 		});
 	}
 }, i = class {
@@ -250,8 +259,15 @@ var n = class {
 		this.court.setDraggableElements(!1);
 	}
 }, o = class extends i {
-	constructor(e, t = "#3498db", n = "#ffffff") {
-		super(e), this.teamColor = t, this.textColor = n, this.playerCount = 1;
+	constructor(e, t = {}) {
+		super(e), typeof t == "string" ? (this.teamColor = arguments[1] || "#3498db", this.textColor = arguments[2] || "#ffffff", this.imageUrl = null, this.numberPosition = "center") : (this.teamColor = t.teamColor || "#3498db", this.textColor = t.textColor || "#ffffff", this.imageUrl = t.imageUrl || null, this.numberPosition = t.numberPosition || "center"), this.playerCount = 1, this.imageObj = null, this.loadIcon();
+	}
+	loadIcon() {
+		if (!this.imageUrl) return;
+		let e = new Image();
+		e.onload = () => {
+			this.imageObj = e;
+		}, e.src = this.imageUrl;
 	}
 	activate() {
 		this.court.stage.container().style.cursor = "crosshair", this.court.setDraggableElements(!1);
@@ -266,8 +282,17 @@ var n = class {
 			y: r,
 			draggable: !0,
 			name: "player",
-			id: `player-${Date.now()}`
-		}), a = new e.Circle({
+			id: `player-${Date.now()}`,
+			imageUrl: this.imageUrl,
+			numberPosition: this.numberPosition
+		}), a;
+		a = this.imageObj ? new e.Image({
+			image: this.imageObj,
+			width: 30,
+			height: 30,
+			x: -15,
+			y: -15
+		}) : new e.Circle({
 			radius: 15,
 			fill: this.teamColor,
 			stroke: "#2c3e50",
@@ -279,33 +304,41 @@ var n = class {
 				y: 2
 			},
 			shadowOpacity: .3
-		}), o = new e.Text({
+		});
+		let o = new e.Text({
 			text: this.playerCount.toString(),
-			fontSize: 14,
+			fontSize: this.numberPosition === "center" ? 14 : 10,
 			fontFamily: "sans-serif",
 			fill: this.textColor,
 			align: "center",
-			verticalAlign: "middle"
+			verticalAlign: "middle",
+			fontStyle: "bold"
 		});
-		o.offsetX(o.width() / 2), o.offsetY(o.height() / 2), i.add(a), i.add(o), i.on("dragmove", () => this.constrainToPitch(i, 15)), i.on("dragend", () => this.court.stateManager.saveState()), i.on("dblclick dbltap", async () => {
-			let e = o.text(), { value: n } = await t.fire({
+		if (this.numberPosition === "bottom-right") {
+			let t = new e.Circle({
+				radius: 7,
+				fill: this.teamColor,
+				stroke: "#ffffff",
+				strokeWidth: 1,
+				x: 10,
+				y: 10
+			});
+			i.add(t), o.x(10), o.y(10), o.offsetX(o.width() / 2), o.offsetY(o.height() / 2);
+		} else o.offsetX(o.width() / 2), o.offsetY(o.height() / 2);
+		i.add(a), i.add(o), i.on("dragmove", () => this.constrainToPitch(i, 15)), i.on("dragend", () => this.court.stateManager.saveState()), i.on("dblclick dbltap", async () => {
+			let { value: e } = await t.fire({
 				title: "Numeração do Jogador",
 				input: "text",
-				inputLabel: "Digite até 3 caracteres:",
-				inputValue: e,
+				inputValue: o.text(),
 				showCancelButton: !0,
-				confirmButtonText: "Salvar",
-				cancelButtonText: "Cancelar",
-				inputValidator: (e) => {
-					if (!e) return "Você precisa digitar algo!";
-				}
+				inputValidator: (e) => !e && "Você precisa digitar algo!"
 			});
-			n && n.trim() !== "" && (o.text(n.substring(0, 3)), o.offsetX(o.width() / 2), o.offsetY(o.height() / 2), this.court.interactiveLayer.batchDraw(), this.court.stateManager.saveState());
+			e && (o.text(e.substring(0, 3)), o.offsetX(o.width() / 2), o.offsetY(o.height() / 2), this.court.interactiveLayer.batchDraw(), this.court.stateManager.saveState());
 		}), this.court.interactiveLayer.add(i), this.playerCount++, this.court.interactiveLayer.draw(), this.court.stateManager.saveState();
 	}
 	constrainToPitch(e, t) {
-		let { width: n, height: r } = this.court.options, i = e.position(), a = i.x, o = i.y;
-		a < 20 + t && (a = 20 + t), a > n - 20 - t && (a = n - 20 - t), o < 20 + t && (o = 20 + t), o > r - 20 - t && (o = r - 20 - t), e.position({
+		let { width: n, height: r } = this.court.options, i = e.position(), a = Math.max(20 + t, Math.min(i.x, n - 20 - t)), o = Math.max(20 + t, Math.min(i.y, r - 20 - t));
+		e.position({
 			x: a,
 			y: o
 		});
@@ -396,7 +429,46 @@ var n = class {
 			t < 10 || n < 10 ? this.currentShape.destroy() : this.court.stateManager.saveState(), this.currentShape = null, this.court.interactiveLayer.batchDraw();
 		}
 	}
-}, l = class {
+}, l = class extends i {
+	constructor(e, t = {}) {
+		super(e), this.imageUrl = t.imageUrl || "", this.name = t.name || "stamp", this.size = t.size || 30, this.imageObj = null, this.loadIcon();
+	}
+	loadIcon() {
+		if (!this.imageUrl) return;
+		let e = new Image();
+		e.onload = () => {
+			this.imageObj = e;
+		}, e.src = this.imageUrl;
+	}
+	activate() {
+		this.court.stage.container().style.cursor = "crosshair", this.court.setDraggableElements(!1);
+	}
+	onMouseDown(e) {
+		if (!this.imageObj) return;
+		let t = this.court.stage.getPointerPosition();
+		this.createStamp(t.x, t.y);
+	}
+	createStamp(t, n) {
+		let r = this.size / 2, { width: i, height: a } = this.court.options, o = Math.max(20 + r, Math.min(t, i - 20 - r)), s = Math.max(20 + r, Math.min(n, a - 20 - r)), c = new e.Image({
+			x: o,
+			y: s,
+			image: this.imageObj,
+			width: this.size,
+			height: this.size,
+			draggable: !0,
+			name: "stamp",
+			id: `stamp-${Date.now()}`,
+			imageUrl: this.imageUrl
+		});
+		c.offsetX(r), c.offsetY(r), c.on("dragmove", () => {
+			let e = c.x(), t = c.y(), n = Math.max(20 + r, Math.min(e, i - 20 - r)), o = Math.max(20 + r, Math.min(t, a - 20 - r));
+			c.position({
+				x: n,
+				y: o
+			});
+		}), c.on("dragend", () => this.court.stateManager.saveState()), this.court.interactiveLayer.add(c), this.court.interactiveLayer.draw(), this.court.stateManager.saveState();
+	}
+}, u = class {
 	constructor(e) {
 		this.court = e;
 	}
@@ -407,7 +479,7 @@ var n = class {
 		let t = typeof e == "string" ? e : JSON.stringify(e);
 		this.court.stateManager.loadState(t), this.court.stateManager.saveState();
 	}
-}, u = class {
+}, d = class {
 	constructor(e) {
 		this.court = e;
 	}
@@ -425,7 +497,7 @@ var n = class {
 		let t = this.exportBase64(), n = document.createElement("a");
 		n.download = e, n.href = t, document.body.appendChild(n), n.click(), document.body.removeChild(n);
 	}
-}, d = class {
+}, f = class {
 	constructor(e, t = {}) {
 		this.containerId = e, this.options = {
 			width: t.width || 800,
@@ -433,6 +505,7 @@ var n = class {
 			backgroundColor: t.backgroundColor || "#4caf50",
 			lineColor: t.lineColor || "#ffffff",
 			initialState: t.initialState || null,
+			customTools: t.customTools || [],
 			toolbar: t.toolbar === void 0 ? { buttons: [
 				"select",
 				"player-a",
@@ -449,7 +522,7 @@ var n = class {
 				"help"
 			] } : t.toolbar,
 			...t
-		}, this.stateManager = new n(this), this.jsonExporter = new l(this), this.imageExporter = new u(this), this.initKonva(), this.initTools(), this.options.initialState ? this.load(this.options.initialState) : this.stateManager.saveState(), this.options.toolbar !== !1 && (this.toolbar = new r(this, this.options.toolbar)), this.drawPitch();
+		}, this.stateManager = new n(this), this.jsonExporter = new u(this), this.imageExporter = new d(this), this.initKonva(), this.initTools(), this.options.initialState ? this.load(this.options.initialState) : this.stateManager.saveState(), this.options.toolbar !== !1 && (this.toolbar = new r(this, this.options.toolbar)), this.drawPitch();
 	}
 	load(e) {
 		this.jsonExporter.import(e);
@@ -457,12 +530,20 @@ var n = class {
 	initTools() {
 		this.tools = {
 			select: new a(this),
-			playerA: new o(this, "#3498db", "#ffffff"),
-			playerB: new o(this, "#e74c3c", "#ffffff"),
+			playerA: new o(this, {
+				teamColor: "#3498db",
+				textColor: "#ffffff"
+			}),
+			playerB: new o(this, {
+				teamColor: "#e74c3c",
+				textColor: "#ffffff"
+			}),
 			arrow: new s(this, "#e74c3c"),
 			rect: new c(this, "rect", "#f39c12"),
 			ellipse: new c(this, "ellipse", "#f39c12")
-		}, this.setTool(this.tools.select);
+		}, this.options.customTools.forEach((e) => {
+			e.type === "stamp" ? this.tools[e.id] = new l(this, e) : e.type === "player" && (this.tools[e.id] = new o(this, e));
+		}), this.setTool(this.tools.select);
 	}
 	initKonva() {
 		this.stage = new e.Stage({
@@ -495,18 +576,28 @@ var n = class {
 		this.currentTool && this.currentTool.deactivate && this.currentTool.deactivate(), this.currentTool = e, this.currentTool && this.currentTool.activate && this.currentTool.activate();
 	}
 	setDraggableElements(e) {
-		this.interactiveLayer.find((e) => e.name() === "player" || e.name() === "arrow" || e.name() === "shape").forEach((t) => {
+		this.interactiveLayer.find((e) => e.name() === "player" || e.name() === "arrow" || e.name() === "shape" || e.name() === "stamp").forEach((t) => {
 			t.draggable(e);
 		}), e || (this.transformer.nodes([]), this.interactiveLayer.batchDraw());
 	}
 	restoreInteractivity() {
 		let e = this.interactiveLayer.find("Transformer")[0];
-		e && (this.transformer = e), this.interactiveLayer.find((e) => e.name() === "player" || e.name() === "shape").forEach((e) => {
-			e.name() === "player" && e.on("dragmove", () => {
-				let t = e.x(), n = e.y();
-				t < 35 && (t = 35), t > this.options.width - 35 && (t = this.options.width - 35), n < 35 && (n = 35), n > this.options.height - 35 && (n = this.options.height - 35), e.position({
-					x: t,
-					y: n
+		e && (this.transformer = e), this.interactiveLayer.find((e) => e.name() === "player" || e.name() === "shape" || e.name() === "stamp").forEach((e) => {
+			let t = e.getAttr("imageUrl");
+			if (t) {
+				let n = e.nodeType === "Group" ? e.findOne("Image") : e;
+				if (n && n.className === "Image") {
+					let e = new Image();
+					e.onload = () => {
+						n.image(e), this.interactiveLayer.batchDraw();
+					}, e.src = t;
+				}
+			}
+			(e.name() === "player" || e.name() === "stamp") && e.on("dragmove", () => {
+				let t = 20 + (e.name() === "player" ? 15 : e.width() / 2), n = e.x(), r = e.y();
+				n < t && (n = t), n > this.options.width - t && (n = this.options.width - t), r < t && (r = t), r > this.options.height - t && (r = this.options.height - t), e.position({
+					x: n,
+					y: r
 				});
 			}), e.on("dragend transformend", () => {
 				this.stateManager.saveState();
@@ -598,4 +689,4 @@ var n = class {
 	}
 };
 //#endregion
-export { s as a, c as i, u as n, o, l as r, a as s, d as t };
+export { c as a, a as c, l as i, d as n, s as o, u as r, o as s, f as t };

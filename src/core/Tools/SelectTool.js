@@ -2,7 +2,7 @@ import Tool from './Tool.js';
 
 export default class SelectTool extends Tool {
   activate() {
-    this.court.stage.container().style.cursor = 'default';
+    this.court.stage.container().style.cursor = 'grab';
     this.court.setDraggableElements(true);
   }
 
@@ -28,7 +28,7 @@ export default class SelectTool extends Tool {
     }
 
     // Ignora se não possui o identificador correto
-    if (!['player', 'arrow', 'shape'].includes(node.name())) {
+    if (!['player', 'arrow', 'shape', 'stamp'].includes(node.name())) {
       this.court.transformer.nodes([]);
       this.court.interactiveLayer.batchDraw();
       return;
