@@ -1,4 +1,5 @@
 # ![Court Canvas Icon](icon-64.png) Court Canvas
+
 Uma biblioteca **agnóstica, modular e focada na renderização vetorial** (2D) de pranchetas táticas esportivas baseada em *Konva.js*.
 
 ![Court Canvas](court-canvas.jpg)
@@ -6,6 +7,7 @@ Uma biblioteca **agnóstica, modular e focada na renderização vetorial** (2D) 
 O **Court Canvas** permite criar rapidamente um campo de futebol interativo onde você pode arrastar jogadores, desenhar marcações geométricas (retângulos, elipses, setas directionais) e, mais importante, **serializar e extrair** esse estado para JSON e Imagens (.png) para salvar tudo num banco de dados.
 
 ## ✨ Funcionalidades (O que o Motor Faz?)
+
 - 🏟️ **Design Preciso:** Background matemático renderizando grandes e pequenas áreas perfeitamente dimensionadas.
 - 🖐 **Interatividade Completa (Drag & Drop):** Padrão *State* nas ferramentas (clique e arraste jogadores para construir a tática).
 - 🧱 **Bounding Box Auto-Ajustável:** Suas peças de xadrez não saem para fora da linha do campo; algoritmos matemáticos seguram os elementos nas bordas corretas!
@@ -22,7 +24,8 @@ O **Court Canvas** permite criar rapidamente um campo de futebol interativo onde
 
 Para garantir que todos os desenvolvedores usem a mesma versão do Node.js (v24+) e evitar conflitos de sistema, o projeto utiliza uma infraestrutura containerizada. **Você não precisa ter o Node instalado na sua máquina**, apenas o Docker.
 
-### Comandos de Atalho:
+### Comandos de Atalho
+
 Use os scripts na pasta `infra/` para rodar comandos NPM ou Node dentro do container:
 
 ```bash
@@ -41,6 +44,7 @@ Use os scripts na pasta `infra/` para rodar comandos NPM ou Node dentro do conta
 ## 🚀 Instalação (Uso em Produção)
 
 O pacote está oficialmente distribuído no NPM Registry:
+
 ```bash
 npm install @mlalbuquerque/court-canvas
 ```
@@ -50,6 +54,7 @@ npm install @mlalbuquerque/court-canvas
 ## 💻 Exemplos de Uso (Demos)
 
 ### 1. Customização Avançada (Ícones, Emojis e Ferramentas)
+
 Você pode estender a biblioteca com seus próprios ícones (arquivos de imagem) ou usar **Emojis/Texto** diretamente como avatares.
 
 > 💡 **Dica:** A propriedade `imageUrl` carrega arquivos externos (preferencialmente SVGs), enquanto a propriedade `image` aceita strings de texto ou emojis.
@@ -85,6 +90,7 @@ const court = new CourtCanvas('meu-campo', {
 ```
 
 ### 1. Vanilla JavaScript (O HTML puro)
+
 ```html
 <div id="meu-campo"></div>
 <script type="module">
@@ -100,6 +106,7 @@ const court = new CourtCanvas('meu-campo', {
 ```
 
 ### 2. React
+
 ```jsx
 import React, { useState } from 'react';
 import CourtCanvasReact from '@mlalbuquerque/court-canvas/react';
@@ -128,6 +135,7 @@ const TacticalBoard = () => {
 ```
 
 ### 3. Vue 3 (Composition API)
+
 ```vue
 <template>
   <div>
@@ -166,6 +174,7 @@ const handleExport = () => {
 O projeto possui um fluxo rigoroso de Garantia de Qualidade (QA):
 
 ### 1. Testes Automatizados
+
 - **Unitários (Vitest):** Focados na lógica do `StateManager`, `Exporters` e `Tools`.
 - **E2E (Playwright):** Validam o fluxo completo do usuário no navegador.
 
@@ -175,15 +184,18 @@ O projeto possui um fluxo rigoroso de Garantia de Qualidade (QA):
 ```
 
 ### 2. Bloqueio de Push (Husky)
+
 Existe um "Git Hook" configurado que impede o envio de código para o servidor (`git push`) se os testes não estiverem passando. Isso garante que a `main` esteja sempre estável.
 
 ### 3. CI/CD (GitHub Actions)
+
 Toda alteração enviada ao GitHub dispara automaticamente o **Test Suite** na nuvem para uma validação final em ambiente limpo.
 
 ---
 
 ## 🛠 Arquitetura do Pacote
-* `src/core/`: Núcleo algorítmico agnóstico focado em *Konva.js*.
-* `src/core/Tools/`: Ferramentas de interação (*PlayerTool*, *ArrowTool*, etc).
-* `src/core/Exporters/`: Formatadores de saída (`JsonExporter` e `ImageExporter`).
-* `src/react/` e `src/vue/`: Wrappers para frameworks UI modernos.
+
+- `src/core/`: Núcleo algorítmico agnóstico focado em *Konva.js*.
+- `src/core/Tools/`: Ferramentas de interação (*PlayerTool*, *ArrowTool*, etc).
+- `src/core/Exporters/`: Formatadores de saída (`JsonExporter` e `ImageExporter`).
+- `src/react/` e `src/vue/`: Wrappers para frameworks UI modernos.

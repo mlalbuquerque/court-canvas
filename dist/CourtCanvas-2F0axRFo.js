@@ -53,17 +53,33 @@ var n = class {
 				boxShadow: "0 4px 6px rgba(0,0,0,0.3)"
 			},
 			...t
-		}, this.options.visible && (this.container = document.getElementById(this.court.containerId), this.toolbarElement = document.createElement("div"), this.toolbarElement.className = "court-canvas-toolbar", Object.assign(this.toolbarElement.style, this.options.style), this.createButtons(), this.injectIntoDOM());
+		}, this.options.visible && (this.container = document.getElementById(this.court.containerId), this.toolbarElement = document.createElement("div"), this.toolbarElement.className = "court-canvas-toolbar", Object.assign(this.toolbarElement.style, this.options.style), this.buttonElements = {}, this.createButtons(), this.injectIntoDOM(), this.updateActiveButton());
 	}
 	injectIntoDOM() {
 		this.container.style.position = "relative", this.options.position === "top" ? this.container.insertBefore(this.toolbarElement, this.container.firstChild) : this.container.appendChild(this.toolbarElement);
 	}
+	updateActiveButton() {
+		let e = this.court.currentTool;
+		e && Object.entries(this.buttonElements).forEach(([t, n]) => {
+			this.checkIfButtonIsActive(t, e) ? (n.style.outline = "2px solid #3498db", n.style.boxShadow = "0 0 8px rgba(52, 152, 219, 0.6)", n.style.background = "#2c3e50") : (n.style.outline = "none", n.style.boxShadow = "none", n.style.background = this.baseButtonMap[t] && this.baseButtonMap[t].style && this.baseButtonMap[t].style.background || "#34495e");
+		});
+	}
+	checkIfButtonIsActive(e, t) {
+		let n = this.baseButtonMap[e];
+		if (!n || !n.getTool) return !1;
+		try {
+			return n.getTool() === t;
+		} catch {
+			return !1;
+		}
+	}
 	createButtons() {
-		let e = {
+		this.baseButtonMap = {
 			select: {
 				icon: "🖐",
 				tooltip: "Selecionar / Mover",
-				action: () => this.court.setTool(this.court.tools.select)
+				action: () => this.court.setTool(this.court.tools.select),
+				getTool: () => this.court.tools.select
 			},
 			"player-a": {
 				icon: "🔵",
@@ -162,30 +178,29 @@ var n = class {
 				},
 				style: { background: "#2980b9" }
 			}
-		};
-		this.court.options.customTools.forEach((t) => {
-			e[t.id] = {
-				icon: t.icon || "🛠",
-				tooltip: t.label || t.id,
-				action: () => this.court.setTool(this.court.tools[t.id]),
-				hasColor: t.type === "player" && !t.imageUrl,
-				getTool: () => this.court.tools[t.id],
+		}, this.court.options.customTools.forEach((e) => {
+			this.baseButtonMap[e.id] = {
+				icon: e.icon || "🛠",
+				tooltip: e.label || e.id,
+				action: () => this.court.setTool(this.court.tools[e.id]),
+				hasColor: e.type === "player" && !e.imageUrl,
+				getTool: () => this.court.tools[e.id],
 				colorProp: "teamColor"
-			}, this.options.buttons.includes(t.id) || this.options.buttons.push(t.id);
-		}), this.options.buttons.forEach((t) => {
-			let n = e[t];
-			if (!n) return;
-			let r = document.createElement("div");
-			Object.assign(r.style, {
+			}, this.options.buttons.includes(e.id) || this.options.buttons.push(e.id);
+		}), this.options.buttons.forEach((e) => {
+			let t = this.baseButtonMap[e];
+			if (!t) return;
+			let n = document.createElement("div");
+			this.buttonElements[e] = n, Object.assign(n.style, {
 				display: "flex",
 				alignItems: "stretch",
 				background: "#34495e",
 				borderRadius: "4px",
 				transition: "transform 0.2s",
-				...n.style || {}
-			}), r.addEventListener("mouseenter", () => r.style.transform = "scale(1.05)"), r.addEventListener("mouseleave", () => r.style.transform = "scale(1)");
-			let i = document.createElement("button");
-			if (i.innerHTML = n.icon, i.title = n.tooltip, Object.assign(i.style, {
+				...t.style || {}
+			}), n.addEventListener("mouseenter", () => n.style.transform = "scale(1.05)"), n.addEventListener("mouseleave", () => n.style.transform = "scale(1)");
+			let r = document.createElement("button");
+			if (r.innerHTML = t.icon, r.title = t.tooltip, Object.assign(r.style, {
 				padding: "8px 12px",
 				cursor: "pointer",
 				background: "transparent",
@@ -194,11 +209,11 @@ var n = class {
 				fontSize: "16px",
 				display: "flex",
 				alignItems: "center"
-			}), i.addEventListener("click", n.action), r.appendChild(i), n.hasColor && n.getTool) {
+			}), r.addEventListener("click", t.action), n.appendChild(r), t.hasColor && t.getTool) {
 				let e = document.createElement("input");
 				e.type = "color";
-				let t = n.getTool();
-				e.value = t[n.colorProp], Object.assign(e.style, {
+				let r = t.getTool();
+				e.value = r[t.colorProp], Object.assign(e.style, {
 					width: "24px",
 					border: "none",
 					padding: "0",
@@ -207,10 +222,10 @@ var n = class {
 					background: "transparent",
 					borderLeft: "1px solid rgba(255,255,255,0.2)"
 				}), e.addEventListener("input", (e) => {
-					t[n.colorProp] = e.target.value, this.court.setTool(t);
-				}), r.appendChild(e);
+					r[t.colorProp] = e.target.value, this.court.setTool(r);
+				}), n.appendChild(e);
 			}
-			this.toolbarElement.appendChild(r);
+			this.toolbarElement.appendChild(n);
 		});
 	}
 	clearCanvas() {
@@ -236,7 +251,7 @@ var n = class {
 	deactivate() {}
 }, a = class extends i {
 	activate() {
-		this.court.stage.container().style.cursor = "default", this.court.setDraggableElements(!0);
+		this.court.stage.container().style.cursor = "grab", this.court.setDraggableElements(!0);
 	}
 	onMouseDown(e) {
 		if (e.target === this.court.stage || e.target.parent === this.court.bgLayer) {
@@ -248,7 +263,8 @@ var n = class {
 		if (n && (t = n), ![
 			"player",
 			"arrow",
-			"shape"
+			"shape",
+			"stamp"
 		].includes(t.name())) {
 			this.court.transformer.nodes([]), this.court.interactiveLayer.batchDraw();
 			return;
@@ -260,7 +276,7 @@ var n = class {
 	}
 }, o = class extends i {
 	constructor(e, t = {}) {
-		super(e), typeof t == "string" ? (this.teamColor = arguments[1] || "#3498db", this.textColor = arguments[2] || "#ffffff", this.imageUrl = null, this.numberPosition = "center") : (this.teamColor = t.teamColor || "#3498db", this.textColor = t.textColor || "#ffffff", this.imageUrl = t.imageUrl || null, this.numberPosition = t.numberPosition || "center"), this.playerCount = 1, this.imageObj = null, this.loadIcon();
+		super(e), typeof t == "string" ? (this.teamColor = arguments[1] || "#3498db", this.textColor = arguments[2] || "#ffffff", this.imageUrl = null, this.textImage = null, this.numberPosition = "center") : (this.teamColor = t.teamColor || "#3498db", this.textColor = t.textColor || "#ffffff", this.imageUrl = t.imageUrl || null, this.textImage = t.image || null, this.numberPosition = t.numberPosition || "center"), this.playerCount = 1, this.imageObj = null, this.loadIcon();
 	}
 	loadIcon() {
 		if (!this.imageUrl) return;
@@ -270,7 +286,10 @@ var n = class {
 		}, e.src = this.imageUrl;
 	}
 	activate() {
-		this.court.stage.container().style.cursor = "crosshair", this.court.setDraggableElements(!1);
+		this.court.stage.container().style.cursor = "cell", this.court.setDraggableElements(!1);
+	}
+	deactivate() {
+		this.court.stage.container().style.cursor = "default";
 	}
 	onMouseDown(e) {
 		let t = this.court.stage.getPointerPosition();
@@ -284,15 +303,23 @@ var n = class {
 			name: "player",
 			id: `player-${Date.now()}`,
 			imageUrl: this.imageUrl,
+			textImage: this.textImage,
 			numberPosition: this.numberPosition
 		}), a;
-		a = this.imageObj ? new e.Image({
+		this.imageObj ? a = new e.Image({
 			image: this.imageObj,
 			width: 30,
 			height: 30,
 			x: -15,
 			y: -15
-		}) : new e.Circle({
+		}) : this.textImage ? (a = new e.Text({
+			text: this.textImage,
+			fontSize: 30,
+			x: 0,
+			y: 0,
+			align: "center",
+			verticalAlign: "middle"
+		}), a.offsetX(a.width() / 2), a.offsetY(a.height() / 2)) : a = new e.Circle({
 			radius: 15,
 			fill: this.teamColor,
 			stroke: "#2c3e50",
@@ -324,7 +351,7 @@ var n = class {
 				y: 10
 			});
 			i.add(t), o.x(10), o.y(10), o.offsetX(o.width() / 2), o.offsetY(o.height() / 2);
-		} else o.offsetX(o.width() / 2), o.offsetY(o.height() / 2);
+		} else this.textImage && this.numberPosition === "center" && o.visible(!1), o.offsetX(o.width() / 2), o.offsetY(o.height() / 2);
 		i.add(a), i.add(o), i.on("dragmove", () => this.constrainToPitch(i, 15)), i.on("dragend", () => this.court.stateManager.saveState()), i.on("dblclick dbltap", async () => {
 			let { value: e } = await t.fire({
 				title: "Numeração do Jogador",
@@ -333,7 +360,7 @@ var n = class {
 				showCancelButton: !0,
 				inputValidator: (e) => !e && "Você precisa digitar algo!"
 			});
-			e && (o.text(e.substring(0, 3)), o.offsetX(o.width() / 2), o.offsetY(o.height() / 2), this.court.interactiveLayer.batchDraw(), this.court.stateManager.saveState());
+			e && (o.text(e.substring(0, 3)), o.offsetX(o.width() / 2), o.offsetY(o.height() / 2), this.textImage && this.numberPosition === "center" && o.visible(!0), this.court.interactiveLayer.batchDraw(), this.court.stateManager.saveState());
 		}), this.court.interactiveLayer.add(i), this.playerCount++, this.court.interactiveLayer.draw(), this.court.stateManager.saveState();
 	}
 	constrainToPitch(e, t) {
@@ -431,7 +458,7 @@ var n = class {
 	}
 }, l = class extends i {
 	constructor(e, t = {}) {
-		super(e), this.imageUrl = t.imageUrl || "", this.name = t.name || "stamp", this.size = t.size || 30, this.imageObj = null, this.loadIcon();
+		super(e), this.imageUrl = t.imageUrl || "", this.textImage = t.image || "", this.name = t.name || "stamp", this.size = t.size || 30, this.imageObj = null, this.loadIcon();
 	}
 	loadIcon() {
 		if (!this.imageUrl) return;
@@ -441,15 +468,19 @@ var n = class {
 		}, e.src = this.imageUrl;
 	}
 	activate() {
-		this.court.stage.container().style.cursor = "crosshair", this.court.setDraggableElements(!1);
+		this.court.stage.container().style.cursor = "cell", this.court.setDraggableElements(!1);
+	}
+	deactivate() {
+		this.court.stage.container().style.cursor = "default";
 	}
 	onMouseDown(e) {
-		if (!this.imageObj) return;
+		if (!this.imageObj && !this.textImage) return;
 		let t = this.court.stage.getPointerPosition();
 		this.createStamp(t.x, t.y);
 	}
 	createStamp(t, n) {
-		let r = this.size / 2, { width: i, height: a } = this.court.options, o = Math.max(20 + r, Math.min(t, i - 20 - r)), s = Math.max(20 + r, Math.min(n, a - 20 - r)), c = new e.Image({
+		let r = this.size / 2, { width: i, height: a } = this.court.options, o = Math.max(20 + r, Math.min(t, i - 20 - r)), s = Math.max(20 + r, Math.min(n, a - 20 - r)), c;
+		this.imageObj ? (c = new e.Image({
 			x: o,
 			y: s,
 			image: this.imageObj,
@@ -459,11 +490,19 @@ var n = class {
 			name: "stamp",
 			id: `stamp-${Date.now()}`,
 			imageUrl: this.imageUrl
-		});
-		c.offsetX(r), c.offsetY(r), c.on("dragmove", () => {
-			let e = c.x(), t = c.y(), n = Math.max(20 + r, Math.min(e, i - 20 - r)), o = Math.max(20 + r, Math.min(t, a - 20 - r));
+		}), c.offsetX(r), c.offsetY(r)) : (c = new e.Text({
+			x: o,
+			y: s,
+			text: this.textImage,
+			fontSize: this.size,
+			draggable: !0,
+			name: "stamp",
+			id: `stamp-${Date.now()}`,
+			textImage: this.textImage
+		}), c.offsetX(c.width() / 2), c.offsetY(c.height() / 2)), c.on("dragmove", () => {
+			let e = c.x(), t = c.y(), n = this.size / 2, r = Math.max(20 + n, Math.min(e, i - 20 - n)), o = Math.max(20 + n, Math.min(t, a - 20 - n));
 			c.position({
-				x: n,
+				x: r,
 				y: o
 			});
 		}), c.on("dragend", () => this.court.stateManager.saveState()), this.court.interactiveLayer.add(c), this.court.interactiveLayer.draw(), this.court.stateManager.saveState();
@@ -573,7 +612,7 @@ var n = class {
 		});
 	}
 	setTool(e) {
-		this.currentTool && this.currentTool.deactivate && this.currentTool.deactivate(), this.currentTool = e, this.currentTool && this.currentTool.activate && this.currentTool.activate();
+		this.currentTool && this.currentTool.deactivate && this.currentTool.deactivate(), this.currentTool = e, this.currentTool && this.currentTool.activate && this.currentTool.activate(), this.toolbar && this.toolbar.updateActiveButton();
 	}
 	setDraggableElements(e) {
 		this.interactiveLayer.find((e) => e.name() === "player" || e.name() === "arrow" || e.name() === "shape" || e.name() === "stamp").forEach((t) => {

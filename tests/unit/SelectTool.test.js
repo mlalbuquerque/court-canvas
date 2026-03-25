@@ -17,7 +17,7 @@ describe('SelectTool', () => {
     const dragSpy = vi.spyOn(court, 'setDraggableElements');
     tool.activate();
     expect(dragSpy).toHaveBeenCalledWith(true);
-    expect(court.stage.container().style.cursor).toBe('default');
+    expect(court.stage.container().style.cursor).toBe('grab');
   });
 
   it('deve desativar removendo o arrasto', () => {
