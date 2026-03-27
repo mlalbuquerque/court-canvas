@@ -37,8 +37,11 @@ if [ -n "$SSH_AUTH_SOCK" ]; then
   ENV_VARS+=(-e "SSH_AUTH_SOCK=/run/ssh-agent")
 fi
 
+# Condicional para TTY (evita erro no Husky)
+[[ -t 0 ]] && TTY_OPTS="-it" || TTY_OPTS="-i"
+
 # Executa o Docker
-docker run --rm -it \
+docker run --rm $TTY_OPTS \
   --init \
   --name "court-canvas-node-$(date +%s)" \
   -u "$(id -u):$(id -g)" \

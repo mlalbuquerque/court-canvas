@@ -7,19 +7,21 @@ var n = class {
 	}
 	saveState() {
 		this.historyStep < this.history.length - 1 && (this.history = this.history.slice(0, this.historyStep + 1));
-		let e = this.court.interactiveLayer.toJSON();
-		this.history.push(e), this.historyStep++;
+		let e = this.court.interactiveLayer.toObject();
+		e.children &&= e.children.filter((e) => e.className !== "Transformer");
+		let t = JSON.stringify(e);
+		this.history.push(t), this.historyStep++;
 	}
 	undo() {
-		this.historyStep > 0 ? (this.historyStep--, this.loadState(this.history[this.historyStep])) : this.historyStep === 0 && (this.historyStep--, this.court.interactiveLayer.destroyChildren(), this.court.interactiveLayer.draw());
+		this.historyStep > 0 ? (this.historyStep--, this.loadState(this.history[this.historyStep])) : this.historyStep === 0 && (this.historyStep--, this.court.interactiveLayer.destroyChildren(), this.court.transformer = this.court.createTransformer(), this.court.interactiveLayer.add(this.court.transformer), this.court.interactiveLayer.draw());
 	}
 	redo() {
 		this.historyStep < this.history.length - 1 && (this.historyStep++, this.loadState(this.history[this.historyStep]));
 	}
 	loadState(e) {
 		this.court.interactiveLayer.destroyChildren(), window.Konva.Node.create(e).children.forEach((e) => {
-			this.court.interactiveLayer.add(e.clone());
-		}), this.court.interactiveLayer.draw(), this.court.restoreInteractivity();
+			e.className !== "Transformer" && this.court.interactiveLayer.add(e.clone());
+		}), this.court.transformer = this.court.createTransformer(), this.court.interactiveLayer.add(this.court.transformer), this.court.interactiveLayer.draw(), this.court.restoreInteractivity();
 	}
 }, r = class {
 	constructor(e, t = {}) {
@@ -512,7 +514,8 @@ var n = class {
 		this.court = e;
 	}
 	export() {
-		return this.court.interactiveLayer.toJSON();
+		let e = this.court.interactiveLayer.toObject();
+		return e.children &&= e.children.filter((e) => e.className !== "Transformer"), JSON.stringify(e);
 	}
 	import(e) {
 		let t = typeof e == "string" ? e : JSON.stringify(e);
@@ -563,6 +566,12 @@ var n = class {
 			...t
 		}, this.stateManager = new n(this), this.jsonExporter = new u(this), this.imageExporter = new d(this), this.initKonva(), this.initTools(), this.options.initialState ? this.load(this.options.initialState) : this.stateManager.saveState(), this.options.toolbar !== !1 && (this.toolbar = new r(this, this.options.toolbar)), this.drawPitch();
 	}
+	createTransformer() {
+		return new e.Transformer({
+			nodes: [],
+			boundBoxFunc: (e, t) => t.width < 10 || t.height < 10 ? e : t
+		});
+	}
 	load(e) {
 		this.jsonExporter.import(e);
 	}
@@ -589,10 +598,7 @@ var n = class {
 			container: this.containerId,
 			width: this.options.width,
 			height: this.options.height
-		}), this.bgLayer = new e.Layer(), this.interactiveLayer = new e.Layer(), this.transformer = new e.Transformer({
-			nodes: [],
-			boundBoxFunc: (e, t) => t.width < 10 || t.height < 10 ? e : t
-		}), this.interactiveLayer.add(this.transformer), this.stage.add(this.bgLayer), this.stage.add(this.interactiveLayer), this.currentTool = null, this.bindEvents(), this.bindKeyboardKeys();
+		}), this.bgLayer = new e.Layer(), this.interactiveLayer = new e.Layer(), this.transformer = this.createTransformer(), this.interactiveLayer.add(this.transformer), this.stage.add(this.bgLayer), this.stage.add(this.interactiveLayer), this.currentTool = null, this.bindEvents(), this.bindKeyboardKeys();
 	}
 	bindKeyboardKeys() {
 		window.addEventListener("keydown", (e) => {
@@ -620,8 +626,7 @@ var n = class {
 		}), e || (this.transformer.nodes([]), this.interactiveLayer.batchDraw());
 	}
 	restoreInteractivity() {
-		let e = this.interactiveLayer.find("Transformer")[0];
-		e && (this.transformer = e), this.interactiveLayer.find((e) => e.name() === "player" || e.name() === "shape" || e.name() === "stamp").forEach((e) => {
+		this.interactiveLayer.find((e) => e.name() === "player" || e.name() === "shape" || e.name() === "stamp").forEach((e) => {
 			let t = e.getAttr("imageUrl");
 			if (t) {
 				let n = e.nodeType === "Group" ? e.findOne("Image") : e;
@@ -642,8 +647,8 @@ var n = class {
 				this.stateManager.saveState();
 			});
 		});
-		let t = this.currentTool && this.currentTool.constructor.name === "SelectTool";
-		this.setDraggableElements(t);
+		let e = this.currentTool && this.currentTool.constructor.name === "SelectTool";
+		this.setDraggableElements(e);
 	}
 	drawPitch() {
 		let { width: t, height: n, backgroundColor: r, lineColor: i } = this.options, a = new e.Rect({

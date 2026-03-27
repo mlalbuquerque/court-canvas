@@ -11,7 +11,13 @@ export default class StateManager {
       this.history = this.history.slice(0, this.historyStep + 1);
     }
     
-    const json = this.court.interactiveLayer.toJSON();
+    // Converte a camada para objeto literal para filtrar o Transformer
+    const layerObj = this.court.interactiveLayer.toObject();
+    if (layerObj.children) {
+      layerObj.children = layerObj.children.filter(child => child.className !== 'Transformer');
+    }
+    
+    const json = JSON.stringify(layerObj);
     this.history.push(json);
     this.historyStep++;
   }
@@ -23,6 +29,11 @@ export default class StateManager {
     } else if (this.historyStep === 0) {
       this.historyStep--;
       this.court.interactiveLayer.destroyChildren();
+      
+      // Reinstancia um transformer vivo
+      this.court.transformer = this.court.createTransformer();
+      this.court.interactiveLayer.add(this.court.transformer);
+      
       this.court.interactiveLayer.draw();
     }
   }
@@ -40,10 +51,16 @@ export default class StateManager {
     // Konva.Node.create creates a new Layer from JSON, but we just want its children
     const tempLayer = window.Konva.Node.create(json);
     
-    // Clone all children to interactiveLayer
+    // Clone all children to interactiveLayer, EXCETO o Transformer
     tempLayer.children.forEach((child) => {
-      this.court.interactiveLayer.add(child.clone());
+      if (child.className !== 'Transformer') {
+        this.court.interactiveLayer.add(child.clone());
+      }
     });
+    
+    // Reinstancia um transformer vivo ANTES do draw
+    this.court.transformer = this.court.createTransformer();
+    this.court.interactiveLayer.add(this.court.transformer);
     
     this.court.interactiveLayer.draw();
     

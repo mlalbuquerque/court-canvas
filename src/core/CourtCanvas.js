@@ -51,6 +51,20 @@ export default class CourtCanvas {
   }
 
   /**
+   * Factory para criar um Transformer configurado
+   * @returns {Konva.Transformer}
+   */
+  createTransformer() {
+    return new Konva.Transformer({
+      nodes: [],
+      boundBoxFunc: (oldBox, newBox) => {
+        if (newBox.width < 10 || newBox.height < 10) { return oldBox; }
+        return newBox;
+      },
+    });
+  }
+
+  /**
    * Carrega um estado JSON na camada interativa
    * @param {String|Object} json 
    */
@@ -91,13 +105,7 @@ export default class CourtCanvas {
     this.interactiveLayer = new Konva.Layer();
     
     // Camada Transformer (para a ferramenta de selecao)
-    this.transformer = new Konva.Transformer({
-      nodes: [],
-      boundBoxFunc: (oldBox, newBox) => {
-        if (newBox.width < 10 || newBox.height < 10) { return oldBox; }
-        return newBox;
-      },
-    });
+    this.transformer = this.createTransformer();
     this.interactiveLayer.add(this.transformer);
 
     this.stage.add(this.bgLayer);
@@ -187,12 +195,6 @@ export default class CourtCanvas {
 
   // Utilizado pelo StateManager.load() para religar callbacks em objetos clonados pelo histórico JSON
   restoreInteractivity() {
-    // Buscar nova referencia do transformer criado ao limpar a layer
-    const newTransformer = this.interactiveLayer.find('Transformer')[0];
-    if (newTransformer) {
-      this.transformer = newTransformer;
-    }
-
     const interactables = this.interactiveLayer.find(node => {
       return node.name() === 'player' || node.name() === 'shape' || node.name() === 'stamp';
     });

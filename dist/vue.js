@@ -1,4 +1,4 @@
-import { n as e, r as t, t as n } from "./CourtCanvas-2F0axRFo.js";
+import { n as e, r as t, t as n } from "./CourtCanvas-BfN81dyq.js";
 import { createElementBlock as r, onBeforeUnmount as i, onMounted as a, openBlock as o, ref as s } from "vue";
 //#region src/vue/CourtCanvasVue.vue
 var c = ["id"], l = {

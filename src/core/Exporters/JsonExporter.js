@@ -4,8 +4,15 @@ export default class JsonExporter {
   }
 
   export() {
-    // Retorna string JSON representativa da camada interativa
-    return this.court.interactiveLayer.toJSON();
+    // Extrai a camada para Objeto JS para filtrar o Transformer
+    const layerObj = this.court.interactiveLayer.toObject();
+    
+    if (layerObj.children) {
+      layerObj.children = layerObj.children.filter(child => child.className !== 'Transformer');
+    }
+
+    // Retorna string JSON limpa e representativa da camada interativa
+    return JSON.stringify(layerObj);
   }
 
   import(json) {

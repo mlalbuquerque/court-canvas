@@ -11,6 +11,8 @@ describe('StateManager', () => {
     courtMock = {
       interactiveLayer: new Konva.Layer(),
       restoreInteractivity: vi.fn(),
+      transformer: null,
+      createTransformer: vi.fn(() => new Konva.Transformer()),
     };
     stateManager = new StateManager(courtMock);
   });
