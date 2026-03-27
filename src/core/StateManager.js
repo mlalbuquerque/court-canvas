@@ -47,21 +47,20 @@ export default class StateManager {
 
   loadState(json) {
     this.court.interactiveLayer.destroyChildren(); // Clear current
-    // Pré-Conversão para impedir veneno de bases antigas!
-    let parsedJson = typeof json === 'string' ? JSON.parse(json) : json;
     
-    // Purificar (Sanitizar) payload antes do parser fatal do Konva
-    if (parsedJson.children) {
-      parsedJson.children = parsedJson.children.filter(child => child.className !== 'Transformer');
-    }
+    // Konva.Node.create creates a new Layer from JSON, but we just want its children
+    const tempLayer = window.Konva.Node.create(json);
     
-    // Konva agora cria os Nodes seguros em temp. (Passamos o Obj Sanitizado)
-    const tempLayer = window.Konva.Node.create(parsedJson);
-    // Clone all children to interactiveLayer
-    tempLayer.children.forEach((child) => {
-        this.court.interactiveLayer.add(child.clone());
+    // Array.from é necessário pois ao transferir nós a Collection original perde o Node.
+    const childrenToMove = Array.from(tempLayer.children || []);
+    childrenToMove.forEach((child) => {
+      if (child.className !== 'Transformer') {
+        child.moveTo(this.court.interactiveLayer);
+      }
     });
-    // Injeta o Transformer nativo limpo na layer reidratada
+    tempLayer.destroy();
+    
+    // Reinstancia um transformer vivo ANTES do draw
     this.court.transformer = this.court.createTransformer();
     this.court.interactiveLayer.add(this.court.transformer);
     

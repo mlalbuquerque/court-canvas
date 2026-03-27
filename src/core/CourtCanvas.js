@@ -233,7 +233,7 @@ export default class CourtCanvas {
       });
     });
     
-    const isSelectMode = this.currentTool && this.currentTool.constructor.name === 'SelectTool';
+    const isSelectMode = this.currentTool && this.currentTool === this.tools.select;
     this.setDraggableElements(isSelectMode);
   }
 
