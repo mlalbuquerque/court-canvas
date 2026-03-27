@@ -30,10 +30,10 @@ export default class CourtCanvas {
     this.stateManager = new StateManager(this);
     this.jsonExporter = new JsonExporter(this);
     this.imageExporter = new ImageExporter(this);
-    
+
     this.initKonva();
     this.initTools();
-    
+
     // Se houver estado inicial, carrega
     if (this.options.initialState) {
       this.load(this.options.initialState);
@@ -41,12 +41,12 @@ export default class CourtCanvas {
       // Caso contrário, salva o estado vazio inicial no histórico
       this.stateManager.saveState();
     }
-    
+
     // Inject native UI toolbar?
     if (this.options.toolbar !== false) {
-       this.toolbar = new Toolbar(this, this.options.toolbar);
+      this.toolbar = new Toolbar(this, this.options.toolbar);
     }
-    
+
     this.drawPitch();
   }
 
@@ -81,7 +81,7 @@ export default class CourtCanvas {
       rect: new ShapeTool(this, 'rect', '#f39c12'),
       ellipse: new ShapeTool(this, 'ellipse', '#f39c12')
     };
-    
+
     // Registrar ferramentas customizadas
     this.options.customTools.forEach(config => {
       if (config.type === 'stamp') {
@@ -90,7 +90,7 @@ export default class CourtCanvas {
         this.tools[config.id] = new PlayerTool(this, config);
       }
     });
-    
+
     this.setTool(this.tools.select);
   }
 
@@ -103,14 +103,14 @@ export default class CourtCanvas {
 
     this.bgLayer = new Konva.Layer();
     this.interactiveLayer = new Konva.Layer();
-    
+
     // Camada Transformer (para a ferramenta de selecao)
     this.transformer = this.createTransformer();
     this.interactiveLayer.add(this.transformer);
 
     this.stage.add(this.bgLayer);
     this.stage.add(this.interactiveLayer);
-    
+
     this.currentTool = null;
     this.bindEvents();
     this.bindKeyboardKeys();
@@ -165,9 +165,9 @@ export default class CourtCanvas {
     if (this.currentTool && this.currentTool.deactivate) {
       this.currentTool.deactivate();
     }
-    
+
     this.currentTool = tool;
-    
+
     if (this.currentTool && this.currentTool.activate) {
       this.currentTool.activate();
     }
@@ -176,16 +176,16 @@ export default class CourtCanvas {
       this.toolbar.updateActiveButton();
     }
   }
-  
+
   setDraggableElements(isDraggable) {
     const interactables = this.interactiveLayer.find(node => {
       return node.name() === 'player' || node.name() === 'arrow' || node.name() === 'shape' || node.name() === 'stamp';
     });
-    
+
     interactables.forEach(node => {
       node.draggable(isDraggable);
     });
-    
+
     // Se estamos saindo da ferramenta SelectTool, perdemos a seleção do transformer
     if (!isDraggable) {
       this.transformer.nodes([]);
@@ -198,7 +198,7 @@ export default class CourtCanvas {
     const interactables = this.interactiveLayer.find(node => {
       return node.name() === 'player' || node.name() === 'shape' || node.name() === 'stamp';
     });
-    
+
     interactables.forEach(node => {
       // Re-hidratação de Imagens
       const imageUrl = node.getAttr('imageUrl');
@@ -215,24 +215,24 @@ export default class CourtCanvas {
       }
 
       if (node.name() === 'player' || node.name() === 'stamp') {
-         node.on('dragmove', () => {
-             const radius = node.name() === 'player' ? 15 : (node.width() / 2);
-             const limit = 20 + radius;
-             let x = node.x(); let y = node.y();
-             if (x < limit) x = limit; 
-             if (x > this.options.width - limit) x = this.options.width - limit;
-             if (y < limit) y = limit; 
-             if (y > this.options.height - limit) y = this.options.height - limit;
-             node.position({x, y});
-         });
+        node.on('dragmove', () => {
+          const radius = node.name() === 'player' ? 15 : (node.width() / 2);
+          const limit = 20 + radius;
+          let x = node.x(); let y = node.y();
+          if (x < limit) x = limit;
+          if (x > this.options.width - limit) x = this.options.width - limit;
+          if (y < limit) y = limit;
+          if (y > this.options.height - limit) y = this.options.height - limit;
+          node.position({ x, y });
+        });
       }
-      
+
       // Recolocar o dragend trigger stateManager para peças reativas
       node.on('dragend transformend', () => {
-         this.stateManager.saveState();
+        this.stateManager.saveState();
       });
     });
-    
+
     const isSelectMode = this.currentTool && this.currentTool === this.tools.select;
     this.setDraggableElements(isSelectMode);
   }
@@ -279,7 +279,7 @@ export default class CourtCanvas {
       strokeWidth: 2,
     });
     this.bgLayer.add(centerCircle);
-    
+
     // Center point
     const centerPoint = new Konva.Circle({
       x: width / 2,
@@ -292,7 +292,7 @@ export default class CourtCanvas {
     // Penalty Areas (Grandes áreas)
     const penaltyAreaWidth = (width - padding * 2) * 0.18;
     const penaltyAreaHeight = (height - padding * 2) * 0.55;
-    
+
     const leftPenaltyArea = new Konva.Rect({
       x: padding,
       y: height / 2 - penaltyAreaHeight / 2,
